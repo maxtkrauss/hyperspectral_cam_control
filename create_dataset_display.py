@@ -55,7 +55,7 @@ def main():
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_path):
     pygame.init()
-    scrn = pygame.display.set_mode((X, Y))
+    scrn = pygame.display.set_mode((X, Y), flags=pygame.FULLSCREEN, display=1)
 
     def transformScaleKeepRatio(image, size):
         iwidth, iheight = image.get_size()
