@@ -28,7 +28,7 @@ exposure = 100  # in ms
 distance = 700  # in mm
 
 # TIFF filename:
-tiff_filename =  "test_rename.tiff"
+tiff_filename =  "single_dark.tiff"
 
 # Start camera
 print("Loading user settings...")
@@ -62,12 +62,14 @@ mesu, res = am.get(timedelta(milliseconds=1000))
 # Save picture
 if mesu is not None:
     processingContext.apply(mesu)
+    cubeExporter.apply(mesu)
+
     print("Export to Multi-Channel Tiff...")
     multi_tiff_settings = cuvis.TiffExportSettings(export_dir=recDir, format=cuvis.TiffFormat.MultiChannel)
     multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
     multiTiffExporter.apply(mesu)
 
-    # Rename the file
+    # Rename the tiff file:
     exported_file = os.path.join(recDir, "Auto_001_0001_raw.tiff")
     new_name = os.path.join(recDir, tiff_filename)
     if os.path.exists(exported_file):
