@@ -5,7 +5,7 @@ import time
 from datetime import timedelta
 import cuvis
 
-# Default directories and files
+# Default directories and files:
 data_dir = None
 lib_dir = None
 
@@ -16,19 +16,23 @@ elif platform.system() == "Linux":
     lib_dir = os.getenv("CUVIS_DATA")
     data_dir = os.path.normpath(os.path.join(lib_dir, "sample_data", "set_examples"))
 
-# Default factory directory
+# Default factory directory:
 factory_dir = os.path.join(lib_dir, os.pardir, "factory")
 
-# Default settings and output directories
+# Default settings and output directories:
 userSettingsDir = os.path.join(data_dir, "settings")
-recDir = os.path.join(os.getcwd(), "images_cubert")
+recDir = os.path.join(os.getcwd(), "proof_of_concept", "images_cubert")
+
+# Dark and white calibration images:
+dark_dir = os.path.join(recDir, "single_dark.cu3s")
+white_dir = os.path.join(recDir, "single_white.tiff")
 
 # Parameters
 exposure = 100  # in ms
 distance = 700  # in mm
 
 # TIFF filename:
-tiff_filename =  "single_dark.tiff"
+tiff_filename =  ".tiff"
 
 # Start camera
 print("Loading user settings...")

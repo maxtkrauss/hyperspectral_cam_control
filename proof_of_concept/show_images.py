@@ -19,7 +19,7 @@ def transformScaleKeepRatio(image, size):
     return scaled_image, image_rect
 
 # Load images
-img_path = 'hyperspectral_cam_control\proof_of_concept\slideshow_test_images'
+img_path = 'proof_of_concept\slideshow_test_images'
 
 images = []
 filenames = [f for f in os.listdir(img_path) if f.endswith('.jpg')]
