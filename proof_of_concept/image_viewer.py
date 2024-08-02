@@ -1,5 +1,10 @@
 import tifffile
 import matplotlib.pyplot as plt
+from matplotlib.widgets import RectangleSelector
+import numpy as np
+
+# List to keep track of multiple selected regions
+selected_regions = []
 
 def get_tiff_shape(file_path):
     try:
@@ -18,15 +23,66 @@ def display_first_channel(file_path):
             # Load the first page
             page = tif.pages[0]
             # Display the first channel
-            plt.imshow(page.asarray()[:, :, 0], cmap='viridis')
-            plt.title("First Channel")
-            plt.colorbar()
+            img = page.asarray()[:, :, 0]
+            fig, ax = plt.subplots()
+            cax = ax.imshow(img, cmap='viridis')
+            fig.colorbar(cax, ax=ax)
+            plt.title("Hyperspectral Selector")
+
+            # Create RectangleSelector
+            toggle_selector.RS = RectangleSelector(ax, onselect, useblit=True,
+                                                   button=[1], minspanx=5, minspany=5, spancoords='pixels',
+                                                   interactive=True)
+            plt.connect('key_press_event', toggle_selector)
+
+            # Store the image data for further use
+            ax.image_data = tif.asarray()
+
             plt.show()
     except Exception as e:
         print(f"Error: Failed to load TIFF file: {e}")
 
+def onselect(eclick, erelease):
+    # Get the coordinates of the rectangle
+    x1, y1 = int(eclick.xdata), int(eclick.ydata)
+    x2, y2 = int(erelease.xdata), int(erelease.ydata)
+
+    # Ensure coordinates are in the correct order
+    if x1 > x2:
+        x1, x2 = x2, x1
+    if y1 > y2:
+        y1, y2 = y2, y1
+
+    # Extract the reflectance values for the selected area
+    img = plt.gca().image_data
+    selected_area = img[y1:y2+1, x1:x2+1, :]
+
+    # Calculate the average reflectance values for the selected area
+    reflectance_values = np.mean(selected_area, axis=(0, 1))
+
+    # Store the normalized reflectance values and color for this selection
+    selected_regions.append(reflectance_values)
+
+    # Plot all selected spectra
+    plt.figure()
+    for i, spectrum in enumerate(selected_regions):
+        plt.plot(spectrum, label=f'Selection {i+1}')
+    plt.xlabel("Band")
+    plt.ylabel("Reflectance")
+    plt.title("Average Reflectance Spectrum for Selected Areas")
+    plt.legend()
+    plt.show()
+
+def toggle_selector(event):
+    print('Key pressed.')
+    if event.key in ['Q', 'q'] and toggle_selector.RS.active:
+        print('RectangleSelector deactivated.')
+        toggle_selector.RS.set_active(False)
+    if event.key in ['A', 'a'] and not toggle_selector.RS.active:
+        print('RectangleSelector activated.')
+        toggle_selector.RS.set_active(True)
+
 if __name__ == "__main__":
-    file_path = input("Enter the path to the TIFF file: ").strip()
-    get_tiff_shape(file_path)
+    file_path = "proof_of_concept/images_cubert/hyperspectral_raw_080224.tiff"
+    get_tiff_shape(file_path) 
     display_first_channel(file_path)
-    

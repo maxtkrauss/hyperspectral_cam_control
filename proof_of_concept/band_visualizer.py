@@ -53,7 +53,7 @@ class HyperspectralGUI:
 def main():
     root = tk.Tk()
     root.title("Hyperspectral Image Viewer")
-    image = load_image('proof_of_concept\\images_cubert\\testing.tiff')
+    image = load_image('proof_of_concept\\images_cubert\\hyperspectral_raw_080224.tiff')
     app = HyperspectralGUI(root, image)
     root.mainloop()
 
