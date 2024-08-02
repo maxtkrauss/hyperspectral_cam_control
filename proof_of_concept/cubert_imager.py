@@ -24,15 +24,16 @@ userSettingsDir = os.path.join(data_dir, "settings")
 recDir = os.path.join(os.getcwd(), "proof_of_concept", "images_cubert")
 
 # Dark and white calibration images:
-dark_dir = os.path.join(recDir, "single_dark.cu3s")
-white_dir = os.path.join(recDir, "single_white.tiff")
+dark_dir = os.path.join(recDir, "single_dark_1.cu3s")
+white_dir = os.path.join(recDir, "single_white_1.cu3s")
 
 # Parameters
-exposure = 100  # in ms
+exposure = 250  # in ms
 distance = 700  # in mm
 
 # TIFF filename:
-tiff_filename =  ".tiff"
+tiff_filename =  "spectra_analysis.tiff"
+reflectance_tiff_filename = "ref_spectra_analysis.tiff"
 
 # Start camera
 print("Loading user settings...")
@@ -63,6 +64,15 @@ print("Image recording...")
 am = acquisitionContext.capture()
 mesu, res = am.get(timedelta(milliseconds=1000))
 
+# Load dark and white calibration images
+print("Loading dark and white calibration images...")
+dark = cuvis.SessionFile(dark_dir)[0]
+white = cuvis.SessionFile(white_dir)[0]
+
+# Set references in processing context
+processingContext.set_reference(dark, cuvis.ReferenceType.Dark)
+processingContext.set_reference(white, cuvis.ReferenceType.White)
+
 # Save picture
 if mesu is not None:
     processingContext.apply(mesu)
@@ -83,5 +93,30 @@ if mesu is not None:
     print("Done")
 else:
     print("Failed")
+
+# # Process image in reflectance mode
+# if mesu is not None:
+#     procArgs = cuvis.ProcessingArgs()
+#     procArgs.processing_mode = cuvis.ProcessingMode.Reflectance
+#     processingContext.set_processing_args(procArgs)
+#     processingContext.apply(mesu)
+
+#     print("Export to Multi-Channel Tiff...")
+#     multi_tiff_settings = cuvis.TiffExportSettings(export_dir=recDir, format=cuvis.TiffFormat.MultiChannel)
+#     multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
+
+#     multiTiffExporter.apply(mesu)
+
+#     # Rename the tiff file:
+#     exported_file = os.path.join(recDir, "Auto_001_0001_raw.tiff")
+#     new_name = os.path.join(recDir, reflectance_tiff_filename)
+#     if os.path.exists(exported_file):
+#         os.rename(exported_file, new_name)
+#         print(f"Renamed file to {new_name}")
+
+#     print("Done")
+# else:
+#     print("Failed")
+
 
 print("Finished.")
