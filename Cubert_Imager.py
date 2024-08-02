@@ -17,7 +17,7 @@ elif platform.system() == "Linux":
     data_dir = os.path.normpath(os.path.join(lib_dir, "sample_data", "set_examples"))
 
 # Default factory directory
-factoryDir = "C:\\Program Files\\Cuvis\\bin\\factory"
+factory_dir = os.path.join(lib_dir, os.pardir, "factory")
 
 # Default settings and output directories
 userSettingsDir = os.path.join(data_dir, "settings")
@@ -36,7 +36,7 @@ settings = cuvis.General(userSettingsDir)
 settings.set_log_level("info")
 
 print("Loading calibration, processing, and acquisition context (factory)...")
-calibration = cuvis.Calibration(factoryDir)
+calibration = cuvis.Calibration(factory_dir)
 processingContext = cuvis.ProcessingContext(calibration)
 acquisitionContext = cuvis.AcquisitionContext(calibration)
 
