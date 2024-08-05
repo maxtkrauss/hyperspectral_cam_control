@@ -46,7 +46,7 @@ def main():
 
         # Save Thorlabs image
         im_tl = Image.fromarray(img_tl)
-        im_tl.save(os.path.join(thorlabs_image_folder, img_disp[2] + "_tl.tif"))
+        im_tl.save(os.path.join(thorlabs_image_folder, img_disp[2][:,-4] + "_thorlabs.tif"))
 
         # Take photo with Cubert cam
 
