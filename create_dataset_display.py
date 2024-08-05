@@ -5,7 +5,7 @@ from pylablib.devices import Thorlabs as tl
 #import cuvis
 import pygame
 import os
-import image
+from PIL import Image
 
 # Parameters
 display_image_folder = 'images/display'
@@ -45,7 +45,7 @@ def main():
         img_tl = cam_tl.snap()
 
         # Save Thorlabs image
-        im_tl = image.from_array(img_tl)
+        im_tl = Image.fromarray(img_tl)
         im_tl.save(os.path.join(thorlabs_image_folder, img_disp[2] + "_tl"))
 
         # Take photo with Cubert cam
@@ -67,6 +67,7 @@ def main():
 
 ## setup everything for the Thorlabs camera
 def setup_thorlabs_cam():
+    tl.list_cameras_tlcam()
     cam = tl.ThorlabsTLCamera()
     cam.set_exposure(exposure_time_tl)
     cam.set_roi(0, 640, 0, 640, hbin=1, vbin=1)
