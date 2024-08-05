@@ -16,7 +16,7 @@ cubert_image_folder = 'images/cubert'
 display_x = 1280
 display_y = 720
 
-exposure_time_tl = 250 # in ms
+exposure_time_tl = 10 # in ms
 exposure_time_cb = 250 # in ms
 
 ## Main function
