@@ -26,7 +26,7 @@ def main():
     scrn, images = setup_pygame_display(display_x, display_y, display_image_folder)
 
     # Wait a few seconds so the monitor can update
-    pygame.time.wait(2000)
+    pygame.time.wait(1000)
 
     # Loop over all loaded images
     for img in images:
