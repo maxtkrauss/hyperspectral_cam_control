@@ -66,12 +66,12 @@ mesu, res = am.get(timedelta(milliseconds=1000))
 
 # Load dark and white calibration images
 print("Loading dark and white calibration images...")
-dark = cuvis.SessionFile(dark_dir)[0]
-white = cuvis.SessionFile(white_dir)[0]
+#dark = cuvis.SessionFile(dark_dir)[0]
+#white = cuvis.SessionFile(white_dir)[0]
 
 # Set references in processing context
-processingContext.set_reference(dark, cuvis.ReferenceType.Dark)
-processingContext.set_reference(white, cuvis.ReferenceType.White)
+#processingContext.set_reference(dark, cuvis.ReferenceType.Dark)
+#processingContext.set_reference(white, cuvis.ReferenceType.White)
 
 # Save picture
 if mesu is not None:

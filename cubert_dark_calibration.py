@@ -7,7 +7,7 @@ import cuvis
 
 def do_dark_calibration():
 
-    input("Remember to put the cap on. (Press Enter to continue...)")
+    print("REMEMBER TO PUT THE CAP ON.")
 
     # Default directories and files:
     data_dir = None
@@ -25,12 +25,12 @@ def do_dark_calibration():
 
     # Default settings and output directories:
     userSettingsDir = os.path.join(data_dir, "settings")
-    recDir = os.path.join(os.getcwd(), "images", "calibration")
+    recDir = os.path.join(os.getcwd(), "images", "calibration", "cubert_dark")
 
     # Parameters
     exposure = 250  # in ms
     distance = 700  # in mm
-    new_file_name = "cubert_dark_calibration.cu3"
+    new_file_name = "cubert_dark_calibration.cu3s"
 
     # Start camera
     print("Loading user settings...")
@@ -65,15 +65,6 @@ def do_dark_calibration():
     if mesu is not None:
         processingContext.apply(mesu)
         cubeExporter.apply(mesu)
-
-        # Rename the cu3 file:
-        exported_file = os.path.join(recDir, "Auto_001_0001_raw.cu3")
-        new_name = os.path.join(recDir, new_file_name)
-        if os.path.exists(exported_file):
-            os.rename(exported_file, new_name)
-            print(f"Renamed file to {new_name}")
-        else: 
-            print("Cannot rename file.")
 
         print("Saving file done.")
     else:
