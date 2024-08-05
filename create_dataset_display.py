@@ -4,6 +4,7 @@ import pylablib as pll
 #import cuvis
 import pygame
 import os
+import Image
 
 # Parameters
 display_image_folder = 'images/display'
@@ -13,32 +14,38 @@ cubert_image_folder = 'images/cubert'
 display_x = 1280
 display_y = 720
 
+exposure_time_tl = 250
+exposure_time_cb = 250
 
 ## Main function
 def main():
     # Setup the Thorlabs cam
+    cam_tl = setup_thorlabs_cam()
 
     # Setup the the Cubert cam
 
     # Calibrate the Cubert cam
 
     # Set up the pygame display and images
-    scrn, images = setup_pygame_display(display_x, display_y, display_image_folder)
+    scrn, images_disp = setup_pygame_display(display_x, display_y, display_image_folder)
 
     # Wait a few seconds so the monitor can update
     pygame.time.wait(1000)
 
-    # Loop over all loaded images
-    for img in images:
+    # Loop over all loaded display images
+    for img_disp in images_disp:
 
         # Display image
-        scrn.blit(img[0], img[1]) # image data, image center
+        scrn.blit(img_disp[0], img_disp[1]) # image data, image center
         pygame.display.flip()
-        pygame.display.set_caption(img[2]) # image name
+        pygame.display.set_caption(img_disp[2]) # image name
 
         # Take photo with Thorlabs cam
+        img_tl = cam_tl.snap()
 
         # Save Thorlabs image
+        im_tl = Image.from_array(img_tl)
+        im_tl.save(os.path.join(thorlabs_image_folder, img_disp[2] + "_tl"))
 
         # Take photo with Cubert cam
 
@@ -55,6 +62,14 @@ def main():
         pass
 
     pygame.quit()
+
+
+## setup everything for the Thorlabs camera
+def setup_thorlabs_cam():
+    cam = pll.devices.Thorlabs.ThorlabsTLCamera()
+    cam.set_exposure(exposure_time_tl)
+    cam.set_roi(0, 640, 0, 640, hbin=1, vbin=1)
+    return cam
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_path):
