@@ -1,0 +1,26 @@
+import pylablib as pll
+
+from pylablib.devices import Thorlabs as tl
+import numpy as np
+import matplotlib.pyplot as plt
+
+def do_dark_calibration(exp_time = 250e-3, n_frames = 10):
+    # connecting cam
+    tl.list_cameras_tlcam()
+    cam = tl.ThorlabsTLCamera()
+
+    # doing exposures
+    cam.set_exposure(exp_time)
+    cam.set_roi(0, 640, 0, 640, hbin=1, vbin=1)
+    frames = cam.grab(nframes=n_frames)
+
+    # averaging
+    avg = np.average(frames, axis = 2)
+
+    np.save('images/calibration/thorlabs_dark/masterdark_tl.npy', avg)
+
+    return avg
+
+
+if __name__ == "__main__":
+    do_dark_calibration()
