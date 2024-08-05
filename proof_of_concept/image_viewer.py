@@ -6,6 +6,9 @@ import numpy as np
 # List to keep track of multiple selected regions
 selected_regions = []
 
+# wavelengths
+lambdas = np.linspace(450,850,106)
+
 def get_tiff_shape(file_path):
     try:
         with tifffile.TiffFile(file_path) as tif:
@@ -26,8 +29,9 @@ def display_first_channel(file_path):
             img = page.asarray()[:, :, 0]
             fig, ax = plt.subplots()
             cax = ax.imshow(img, cmap='viridis')
-            fig.colorbar(cax, ax=ax)
-            plt.title("Hyperspectral Selector")
+            cbar = fig.colorbar(cax, ax=ax)
+            plt.title("Dark subtraction calibration (10 frames)")
+            cbar.set_label('Intensity', rotation=270, labelpad=15)
 
             # Create RectangleSelector
             toggle_selector.RS = RectangleSelector(ax, onselect, useblit=True,
@@ -66,10 +70,10 @@ def onselect(eclick, erelease):
     # Plot all selected spectra
     plt.figure()
     for i, spectrum in enumerate(selected_regions):
-        plt.plot(spectrum, label=f'Selection {i+1}')
-    plt.xlabel("Band")
-    plt.ylabel("Reflectance")
-    plt.title("Average Reflectance Spectrum for Selected Areas")
+        plt.plot(lambdas, spectrum, label=f'Selection {i+1}')
+    plt.xlabel("Wavelength (nm)")
+    plt.ylabel("Intensity")
+    plt.title("Spectrum for Selected Areas")
     plt.legend()
     plt.show()
 
@@ -83,6 +87,6 @@ def toggle_selector(event):
         toggle_selector.RS.set_active(True)
 
 if __name__ == "__main__":
-    file_path = "proof_of_concept/images_cubert/hyperspectral_raw_080224.tiff"
+    file_path = "proof_of_concept\\images_cubert\\10_frame_dark_calib_ds.tiff"
     get_tiff_shape(file_path) 
     display_first_channel(file_path)
