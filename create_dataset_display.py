@@ -6,6 +6,7 @@ from pylablib.devices import Thorlabs as tl
 import pygame
 import os
 from PIL import Image
+import numpy as np
 
 # Parameters
 display_image_folder = 'images/display'
@@ -22,6 +23,9 @@ exposure_time_cb = 250 # in ms
 def main():
     # Setup the Thorlabs cam
     cam_tl = setup_thorlabs_cam()
+
+    # Get Thorlabs masterdark calibration frame
+    dark_calibration_tl = np.load("images/calibration/thorlabs_dark/masterdark_tl.npy")
 
     # Setup the the Cubert cam
 
@@ -42,7 +46,7 @@ def main():
         pygame.display.set_caption(img_disp[2]) # image name
 
         # Take photo with Thorlabs cam
-        img_tl = cam_tl.snap()
+        img_tl = cam_tl.snap() - dark_calibration_tl
 
         # Save Thorlabs image
         im_tl = Image.fromarray(img_tl)
