@@ -7,7 +7,7 @@ import cuvis
 
 def do_dark_calibration():
 
-    print("REMEMBER TO PUT THE LENS CAP ON.")
+    print("REMEMBER TO PUT THE CAP ON.")
 
     # Default directories and files:
     data_dir = None
@@ -30,6 +30,7 @@ def do_dark_calibration():
     # Parameters
     exposure = 250  # in ms
     distance = 700  # in mm
+    n_calibration_frames = 3
 
     # Start camera
     print("Loading user settings...")
@@ -55,10 +56,16 @@ def do_dark_calibration():
     acquisitionContext.integration_time = exposure
     processingContext.calc_distance(distance)
 
-    # Take picture
-    print("Image recording...")
-    am = acquisitionContext.capture()
-    mesu, res = am.get(timedelta(milliseconds=1000))
+    mesu = []
+    res = []
+
+    # Take pictures
+    for i in range(n_calibration_frames):
+        print("Image recording...")
+        am = acquisitionContext.capture()
+        mesu[i], res[i] = am.get(timedelta(milliseconds=1000))
+
+    print(mesu[0])
 
     # Save picture
     if mesu is not None:
