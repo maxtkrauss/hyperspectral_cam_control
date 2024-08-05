@@ -63,18 +63,21 @@ def do_dark_calibration():
     for i in range(n_calibration_frames):
         print("Image recording...")
         am = acquisitionContext.capture()
-        mesu[i], res[i] = am.get(timedelta(milliseconds=1000))
+        m, r = am.get(timedelta(milliseconds=1000))
+        mesu.append(m)
+        res.append(r)
 
     print(mesu[0])
 
     # Save picture
-    if mesu is not None:
-        processingContext.apply(mesu)
-        cubeExporter.apply(mesu)
+    for m in mesu:
+        if m is not None:
+            processingContext.apply(m)
+            cubeExporter.apply(m)
 
-        print("Saving file done.")
-    else:
-        print("Saving file Failed")
+            print("Saving file done.")
+        else:
+            print("Saving file Failed")
 
     print("Finished dark calibration")
 
