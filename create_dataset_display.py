@@ -15,8 +15,8 @@ cubert_image_folder = 'images/cubert'
 display_x = 1280
 display_y = 720
 
-exposure_time_tl = 250
-exposure_time_cb = 250
+exposure_time_tl = 250 # in ms
+exposure_time_cb = 250 # in ms
 
 ## Main function
 def main():
@@ -46,7 +46,7 @@ def main():
 
         # Save Thorlabs image
         im_tl = Image.fromarray(img_tl)
-        im_tl.save(os.path.join(thorlabs_image_folder, img_disp[2] + "_tl"))
+        im_tl.save(os.path.join(thorlabs_image_folder, img_disp[2][:,-4] + "_thorlabs.tif"))
 
         # Take photo with Cubert cam
 
@@ -69,7 +69,7 @@ def main():
 def setup_thorlabs_cam():
     tl.list_cameras_tlcam()
     cam = tl.ThorlabsTLCamera()
-    cam.set_exposure(exposure_time_tl)
+    cam.set_exposure(exposure_time_tl * 1e-3)
     cam.set_roi(0, 640, 0, 640, hbin=1, vbin=1)
     return cam
 
