@@ -6,6 +6,9 @@ from datetime import timedelta
 import cuvis
 
 def do_dark_calibration():
+
+    input("Remember to put the cap on. (Press Enter to continue...)")
+
     # Default directories and files:
     data_dir = None
     lib_dir = None
@@ -69,12 +72,14 @@ def do_dark_calibration():
         if os.path.exists(exported_file):
             os.rename(exported_file, new_name)
             print(f"Renamed file to {new_name}")
+        else: 
+            print("Cannot rename file.")
 
-        print("Done")
+        print("Saving file done.")
     else:
-        print("Failed")
+        print("Saving file Failed")
 
-    print("Finished.")
+    print("Finished dark calibration")
 
 
 if __name__ == "__main__":
