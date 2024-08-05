@@ -74,7 +74,7 @@ def do_dark_calibration():
         if m is not None:
             processingContext.apply(m)
             cubeExporter.apply(m)
-
+            
             print("Saving file done.")
         else:
             print("Saving file Failed")
