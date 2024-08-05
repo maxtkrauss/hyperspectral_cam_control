@@ -15,11 +15,11 @@ def do_dark_calibration(exp_time = 250e-3, n_frames = 10):
     frames = cam.grab(nframes=n_frames)
 
     # averaging
-    avg = np.average(frames, axis = 2)
+    avg = np.average(frames, axis = 0)
+    print("Shape of Master Dark:", avg.shape)
 
+    # saving
     np.save('images/calibration/thorlabs_dark/masterdark_tl.npy', avg)
-
-    return avg
 
 
 if __name__ == "__main__":
