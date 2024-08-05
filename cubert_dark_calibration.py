@@ -7,7 +7,7 @@ import cuvis
 
 def do_dark_calibration():
 
-    print("REMEMBER TO PUT THE CAP ON.")
+    print("REMEMBER TO PUT THE LENS CAP ON.")
 
     # Default directories and files:
     data_dir = None
@@ -30,7 +30,6 @@ def do_dark_calibration():
     # Parameters
     exposure = 250  # in ms
     distance = 700  # in mm
-    new_file_name = "cubert_dark_calibration.cu3s"
 
     # Start camera
     print("Loading user settings...")
