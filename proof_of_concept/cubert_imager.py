@@ -23,17 +23,23 @@ factory_dir = os.path.join(lib_dir, os.pardir, "factory")
 userSettingsDir = os.path.join(data_dir, "settings")
 recDir = os.path.join(os.getcwd(), "proof_of_concept", "images_cubert")
 
-# Dark and white calibration images:
-dark_dir = os.path.join(recDir, "single_dark_1.cu3s")
-white_dir = os.path.join(recDir, "single_white_1.cu3s")
+# Dark calibration images:
+dark_frame_paths = ["dark_1.cu3s",
+                    "dark_2.cu3s",
+                    "dark_3.cu3s",
+                    "dark_4.cu3s",
+                    "dark_5.cu3s",
+                    "dark_6.cu3s"
+                    ]
+
+dark_dir = [os.path.join(recDir, path) for path in dark_frame_paths]
 
 # Parameters
 exposure = 250  # in ms
 distance = 700  # in mm
 
 # TIFF filename:
-tiff_filename =  "spectra_analysis.tiff"
-reflectance_tiff_filename = "ref_spectra_analysis.tiff"
+tiff_filename =  "10_frame_dark_calib"
 
 # Start camera
 print("Loading user settings...")
@@ -64,17 +70,19 @@ print("Image recording...")
 am = acquisitionContext.capture()
 mesu, res = am.get(timedelta(milliseconds=1000))
 
-# Load dark and white calibration images
+# Load dark calibration images
 print("Loading dark and white calibration images...")
-dark = cuvis.SessionFile(dark_dir)[0]
-white = cuvis.SessionFile(white_dir)[0]
+dark = []
+for i in dark_dir:
+    dark.append(cuvis.SessionFile(i)[0])
 
-# Set references in processing context
-processingContext.set_reference(dark, cuvis.ReferenceType.Dark)
-processingContext.set_reference(white, cuvis.ReferenceType.White)
+# # Set references in processing context
+for i in dark:
+    processingContext.set_reference(i, cuvis.ReferenceType.Dark)
 
-# Save picture
+# Process image in raw
 if mesu is not None:
+    mesu.set_name(tiff_filename)
     processingContext.apply(mesu)
     cubeExporter.apply(mesu)
 
@@ -83,21 +91,15 @@ if mesu is not None:
     multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
     multiTiffExporter.apply(mesu)
 
-    # Rename the tiff file:
-    exported_file = os.path.join(recDir, "Auto_001_0001_raw.tiff")
-    new_name = os.path.join(recDir, tiff_filename)
-    if os.path.exists(exported_file):
-        os.rename(exported_file, new_name)
-        print(f"Renamed file to {new_name}")
-
     print("Done")
-else:
+else:   
     print("Failed")
 
-# # Process image in reflectance mode
+# Process image in dark subtract 
 # if mesu is not None:
+#     mesu.set_name(tiff_filename)
 #     procArgs = cuvis.ProcessingArgs()
-#     procArgs.processing_mode = cuvis.ProcessingMode.Reflectance
+#     procArgs.processing_mode = cuvis.ProcessingMode.DarkSubtract
 #     processingContext.set_processing_args(procArgs)
 #     processingContext.apply(mesu)
 
@@ -106,13 +108,6 @@ else:
 #     multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
 
 #     multiTiffExporter.apply(mesu)
-
-#     # Rename the tiff file:
-#     exported_file = os.path.join(recDir, "Auto_001_0001_raw.tiff")
-#     new_name = os.path.join(recDir, reflectance_tiff_filename)
-#     if os.path.exists(exported_file):
-#         os.rename(exported_file, new_name)
-#         print(f"Renamed file to {new_name}")
 
 #     print("Done")
 # else:
