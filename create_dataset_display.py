@@ -58,8 +58,13 @@ def main():
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_path):
+    # Pygame and display setup
     pygame.init()
-    scrn = pygame.display.set_mode((X, Y), display=1)
+    try:
+        scrn = pygame.display.set_mode((X, Y), display=1) # show on second monitor
+    except:
+        print("No second monitor available, using main monitor.")
+        scrn = pygame.display.set_mode((X, Y))
 
     def transformScaleKeepRatio(image, size):
         iwidth, iheight = image.get_size()
