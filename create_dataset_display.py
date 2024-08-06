@@ -16,13 +16,14 @@ cubert_image_folder = 'images/cubert'
 display_x = 1280
 display_y = 720
 
-exposure_time_tl = 10 # in ms
+exposure_time_tl = 1 # in ms
 exposure_time_cb = 250 # in ms
 
 ## Main function
 def main():
     # Setup the Thorlabs cam
     cam_tl = setup_thorlabs_cam()
+    print("TL setup done.")
 
     # Get Thorlabs masterdark calibration frame
     dark_calibration_tl = np.load("images/calibration/thorlabs_dark/masterdark_tl.npy")
@@ -44,13 +45,16 @@ def main():
         scrn.blit(img_disp[0], img_disp[1]) # image data, image center
         pygame.display.flip()
         pygame.display.set_caption(img_disp[2]) # image name
+        print(f"Showing image {img_disp[2]} on display.")
 
         # Take photo with Thorlabs cam
         img_tl = cam_tl.snap() - dark_calibration_tl
+        print(f"Taking {exposure_time_tl} ms exposure with TL cam.")
 
         # Save Thorlabs image
         im_tl = Image.fromarray(img_tl)
         im_tl.save(os.path.join(thorlabs_image_folder, img_disp[2][:-4] + "_thorlabs.tif"))
+        print(f"Saving TL cam image. (Max: {np.max(img_tl)}, Min: {np.min(img_tl)})")
 
         # Take photo with Cubert cam
 
@@ -62,10 +66,12 @@ def main():
         # test if pygame should stop
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
+                print("Quitting.")
                 pygame.quit()
 
         pass
 
+    print("Dataset creation finished. Quitting.")
     pygame.quit()
 
 
