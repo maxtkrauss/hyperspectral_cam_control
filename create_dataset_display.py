@@ -31,7 +31,7 @@ def main():
     # Get Thorlabs masterdark calibration frame
     dark_sub_bool_tl = do_dark_subtract_tl
     try:
-        dark_calibration_tl = np.load("images/calibration/thorlabs_dark/masterdark_tl_{exposure_time_tl}ms.npy")
+        dark_calibration_tl = np.load("images//calibration//thorlabs_dark//masterdark_tl_{exposure_time_tl}ms.npy")
     except:
         print("No correct dark calibration frame (.npy file) found.")
         dark_sub_bool_tl = False
