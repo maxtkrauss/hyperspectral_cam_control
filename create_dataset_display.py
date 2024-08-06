@@ -54,7 +54,7 @@ def main():
         if do_dark_subtract_tl:
             img_tl = cam_tl.snap() - dark_calibration_tl
         else:
-            img_tl = cam_tl.snap() - dark_calibration_tl
+            img_tl = cam_tl.snap()
         print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
 
         # Save Thorlabs image
