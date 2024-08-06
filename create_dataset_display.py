@@ -21,6 +21,7 @@ exposure_time_cb = 250 # in ms
 
 # Thorlabs cam
 do_dark_subtract_tl = True
+roi_tl = (0, 2448, 0, 2048)
 
 ## Main function
 def main():
@@ -87,7 +88,7 @@ def setup_thorlabs_cam():
     tl.list_cameras_tlcam()
     cam = tl.ThorlabsTLCamera()
     cam.set_exposure(exposure_time_tl * 1e-3)
-    cam.set_roi(0, 2448, 0, 2048, hbin=1, vbin=1)
+    cam.set_roi(*roi_tl, hbin=1, vbin=1)
     return cam
 
 ## setup pygame and load images for the display
