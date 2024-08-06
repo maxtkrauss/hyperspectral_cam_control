@@ -29,12 +29,12 @@ def main():
     print("TL setup done.")
 
     # Get Thorlabs masterdark calibration frame
+    dark_sub_bool_tl = do_dark_subtract_tl
     try:
-        dark_calibration_tl = np.load("images/calibration/thorlabs_dark/masterdark_tl_{exp_time}ms.npy")
+        dark_calibration_tl = np.load("images/calibration/thorlabs_dark/masterdark_tl_{exposure_time_tl}ms.npy")
     except:
         print("No correct dark calibration frame (.npy file) found.")
-        do_dark_subtract_tl = False
-
+        dark_sub_bool_tl = False
 
     # Setup the the Cubert cam
 
@@ -56,7 +56,7 @@ def main():
         print(f"Showing image {img_disp[2]} on display.")
 
         # Take photo with Thorlabs cam
-        img_tl = cam_tl.snap() - dark_calibration_tl * do_dark_subtract_tl
+        img_tl = cam_tl.snap() - dark_calibration_tl * dark_sub_bool_tl
         print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
 
         # Save Thorlabs image
