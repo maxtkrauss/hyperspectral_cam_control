@@ -80,11 +80,11 @@ def main():
         # Take photo with Cubert cam
         print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
         am = acquisitionContext.capture()
-        mesu, res = am.get(timedelta(milliseconds=1000))
+        mesu, res = am.get(timedelta(milliseconds=1500))
 
         # Save Cubert image
         if mesu is not None:
-            mesu.set_name(img_name[:-4] + "_cubert.tif")
+            mesu.set_name(img_name[:-4] + "_cubert")
             processingContext.apply(mesu)
             print("Export CB image to multi-channel .tif...")
             multi_tiff_settings = cuvis.TiffExportSettings(export_dir=cubert_image_folder, format=cuvis.TiffFormat.MultiChannel)
@@ -92,7 +92,7 @@ def main():
             multiTiffExporter.apply(mesu)
             print("CB image saved.")
         else:   
-            print("CB iamge saving failed.")
+            print("CB image saving failed.")
 
         # wait half a second
         pygame.time.wait(500)
