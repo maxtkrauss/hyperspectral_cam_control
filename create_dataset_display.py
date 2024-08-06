@@ -87,7 +87,7 @@ def setup_thorlabs_cam():
     tl.list_cameras_tlcam()
     cam = tl.ThorlabsTLCamera()
     cam.set_exposure(exposure_time_tl * 1e-3)
-    cam.set_roi(0, 640, 0, 640, hbin=1, vbin=1)
+    cam.set_roi(0, 2448, 0, 2048, hbin=1, vbin=1)
     return cam
 
 ## setup pygame and load images for the display
