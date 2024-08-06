@@ -81,22 +81,7 @@ def main():
         im_tl.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
         print(f"Saving TL cam image. (Max: {np.max(img_tl)}, Min: {np.min(img_tl)})")
 
-        # Take photo with Cubert cam
-        print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
-        am = acquisitionContext.capture()
-        mesu, res = am.get(timedelta(milliseconds=get_time_cb))
-
-        # Save Cubert image
-        if mesu is not None:
-            mesu.set_name(img_name[:-4] + "_cubert")
-            processingContext.apply(mesu)
-            print("Export CB image to multi-channel .tif...")
-            multi_tiff_settings = cuvis.TiffExportSettings(export_dir=cubert_image_folder, format=cuvis.TiffFormat.MultiChannel)
-            multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
-            multiTiffExporter.apply(mesu)
-            print("CB image saved.")
-        else:   
-            print("CB image saving failed.")
+        
 
         # wait half a second
         pygame.time.wait(500)
@@ -165,6 +150,29 @@ def setup_cubert_cam():
     processingContext.calc_distance(distance_cb)
 
     return acquisitionContext, processingContext, cubeExporter
+
+def take_and_save_cubert_image(img_name, acquisitionContext, processingContext, cubeExporter):
+    imaging_failed_counter = 0
+    # Try taking and siving images until it works.
+    while imaging_failed_counter < 5:
+        # Take photo with Cubert cam
+        print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
+        am = acquisitionContext.capture()
+        mesu, res = am.get(timedelta(milliseconds=get_time_cb))
+
+        # Save Cubert image
+        if mesu is not None:
+            mesu.set_name(img_name[:-4] + "_cubert")
+            processingContext.apply(mesu)
+            print("Export CB image to multi-channel .tif...")
+            multi_tiff_settings = cuvis.TiffExportSettings(export_dir=cubert_image_folder, format=cuvis.TiffFormat.MultiChannel)
+            multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
+            multiTiffExporter.apply(mesu)
+            print("CB image saved.")
+            break
+        else:   
+            print(f"CB image saving failed. Counter: {imaging_failed_counter}")
+            imaging_failed_counter += 1
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_path):
