@@ -35,6 +35,8 @@ def main():
 
     # Setup the the Cubert cam
 
+    setup_cubert_cam()
+
     # Calibrate the Cubert cam
 
     # Set up the pygame display and images
@@ -90,6 +92,10 @@ def setup_thorlabs_cam():
     cam.set_exposure(exposure_time_tl * 1e-3)
     cam.set_roi(*roi_tl, hbin=1, vbin=1)
     return cam
+
+## setup everything for the Thorlabs camera
+def setup_cubert_cam():
+    pass
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_path):
