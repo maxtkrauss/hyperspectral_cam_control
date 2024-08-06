@@ -31,6 +31,7 @@ roi_tl = (0, 2448, 0, 2048)
 # Additional paramters for Cubert cam
 do_dark_subtract_cb = True
 distance_cb = 700 # in mm
+get_time_cb = 2000 # in ms
 
 
 ## Main function
@@ -45,12 +46,15 @@ def main():
 
     # Setup the the Cubert cam
     acquisitionContext, processingContext, cubeExporter = setup_cubert_cam()
+    print("CB setup done.")
 
     # Calibrate the Cubert cam
-    dark_calibration_cb = None
+    if do_dark_subtract_cb:
+        dark_calibration_cb = None
 
     # Set up the pygame display and images
     scrn, images_disp = setup_pygame_display(display_x, display_y, display_image_folder)
+    print("Pygame setup done.")
 
     # Wait a few seconds so the monitor can update
     pygame.time.wait(1000)
@@ -63,7 +67,7 @@ def main():
         scrn.blit(img_data, img_center) # image data, image center
         pygame.display.flip()
         pygame.display.set_caption(img_name) # image name
-        print(f"Showing image {img_name} on display.")
+        print(f"\nShowing image {img_name} on display.")
 
         # Take photo with Thorlabs cam
         if do_dark_subtract_tl:
@@ -80,7 +84,7 @@ def main():
         # Take photo with Cubert cam
         print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
         am = acquisitionContext.capture()
-        mesu, res = am.get(timedelta(milliseconds=1500))
+        mesu, res = am.get(timedelta(milliseconds=get_time_cb))
 
         # Save Cubert image
         if mesu is not None:
@@ -105,7 +109,7 @@ def main():
 
         pass
 
-    print("Dataset creation finished. Quitting.")
+    print("\nDataset creation finished. Quitting.")
     pygame.quit()
 
 
@@ -135,7 +139,6 @@ def setup_cubert_cam():
 
     # Default settings and output directories:
     userSettingsDir = os.path.join(data_dir, "settings")
-    recDir = os.path.join(os.getcwd(), "proof_of_concept", "images_cubert")
 
     # Start camera
     print("Loading user settings...")
@@ -147,14 +150,14 @@ def setup_cubert_cam():
     processingContext = cuvis.ProcessingContext(calibration)
     acquisitionContext = cuvis.AcquisitionContext(calibration)
 
-    saveArgs = cuvis.SaveArgs(export_dir=recDir, allow_overwrite=True, allow_session_file=True)
+    saveArgs = cuvis.SaveArgs(export_dir=cubert_image_folder, allow_overwrite=True, allow_session_file=True)
     cubeExporter = cuvis.CubeExporter(saveArgs)
 
     # Wait for camera to come online
     while acquisitionContext.state == cuvis.HardwareState.Offline:
         print(".", end="")
         time.sleep(1)
-    print("\nCamera is online")
+    print("\nCubert camera is online.")
 
     # Set acquisition context parameters
     acquisitionContext.operation_mode = cuvis.OperationMode.Software
