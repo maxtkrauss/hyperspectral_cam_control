@@ -4,7 +4,7 @@ from pylablib.devices import Thorlabs as tl
 import numpy as np
 import matplotlib.pyplot as plt
 
-def do_dark_calibration(exp_time = 10e-3, n_frames = 10):
+def do_dark_calibration(exp_time = 1e-3, n_frames = 10):
     # connecting cam
     tl.list_cameras_tlcam()
     cam = tl.ThorlabsTLCamera()
@@ -22,7 +22,7 @@ def do_dark_calibration(exp_time = 10e-3, n_frames = 10):
     print("Std of Master Dark:", np.std(avg))
 
     # saving
-    np.save('images/calibration/thorlabs_dark/masterdark_tl.npy', avg)
+    np.save(f'images/calibration/thorlabs_dark/masterdark_tl.npy', avg)
 
 
 if __name__ == "__main__":
