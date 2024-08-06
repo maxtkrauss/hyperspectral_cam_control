@@ -29,7 +29,8 @@ def main():
     print("TL setup done.")
 
     # Get Thorlabs masterdark calibration frame
-    dark_calibration_tl = np.load(f"images//calibration//thorlabs_dark//masterdark_tl_{exposure_time_tl}ms.npy")
+    if do_dark_subtract_tl:
+        dark_calibration_tl = np.load(f"images//calibration//thorlabs_dark//masterdark_tl_{exposure_time_tl}ms.npy")
 
     # Setup the the Cubert cam
 
@@ -54,7 +55,7 @@ def main():
         if do_dark_subtract_tl:
             img_tl = cam_tl.snap() - dark_calibration_tl
         else:
-            img_tl = cam_tl.snap() - dark_calibration_tl
+            img_tl = cam_tl.snap()
         print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
 
         # Save Thorlabs image
@@ -86,7 +87,7 @@ def setup_thorlabs_cam():
     tl.list_cameras_tlcam()
     cam = tl.ThorlabsTLCamera()
     cam.set_exposure(exposure_time_tl * 1e-3)
-    cam.set_roi(0, 640, 0, 640, hbin=1, vbin=1)
+    cam.set_roi(0, 2448, 0, 2048, hbin=1, vbin=1)
     return cam
 
 ## setup pygame and load images for the display
