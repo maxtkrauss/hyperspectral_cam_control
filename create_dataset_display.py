@@ -81,7 +81,8 @@ def main():
         im_tl.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
         print(f"Saving TL cam image. (Max: {np.max(img_tl)}, Min: {np.min(img_tl)})")
 
-        
+        # Taking and saving photo with Cubert cam
+        take_and_save_cubert_image(img_name, acquisitionContext, processingContext, cubeExporter)
 
         # wait half a second
         pygame.time.wait(500)
