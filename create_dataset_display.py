@@ -29,7 +29,8 @@ def main():
     print("TL setup done.")
 
     # Get Thorlabs masterdark calibration frame
-    dark_calibration_tl = np.load(f"images//calibration//thorlabs_dark//masterdark_tl_{exposure_time_tl}ms.npy")
+    if do_dark_subtract_tl:
+        dark_calibration_tl = np.load(f"images//calibration//thorlabs_dark//masterdark_tl_{exposure_time_tl}ms.npy")
 
     # Setup the the Cubert cam
 
