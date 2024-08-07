@@ -1,6 +1,12 @@
 # Hyperspectral Camera Control
 
-## How to run:
+## TODO
+- Subtract the averaged dark calibration from the cubert files
+- possibly saving the calibrated cubert files as tiffs directly (no step via cu3s)
+- add the option to also average the light frames
+- align and crop (maybe downsample) the images so that both cameras image the same field of view
+
+## How to run
 
 ### thorlabs_dark_calibration.py
 Run it to create a master dark frame for the Thorlabs camera. It will be saved in images/calibration/thorlabs_dark. Remember to put on a cap to darken the sensor.
