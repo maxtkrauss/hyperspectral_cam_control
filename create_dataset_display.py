@@ -30,7 +30,7 @@ roi_tl = (0, 2448, 0, 2048)
 
 # Additional paramters for Cubert cam
 do_dark_subtract_cb = True
-distance_cb = 700 # in mm
+distance_cb = 1000 # in mm
 get_time_cb = 2000 # in ms
 
 

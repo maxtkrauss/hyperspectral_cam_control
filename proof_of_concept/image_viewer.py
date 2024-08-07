@@ -26,11 +26,11 @@ def display_first_channel(file_path):
             # Load the first page
             page = tif.pages[0]
             # Display the first channel
-            img = page.asarray()[:, :, 0]
-            fig, ax = plt.subplots()
-            cax = ax.imshow(img, cmap='viridis')
+            img = page.asarray()[:, :, 53]
+            fig, ax = plt.subplots(figsize = (10,7))
+            cax = ax.imshow(img, cmap='gray')
             cbar = fig.colorbar(cax, ax=ax)
-            plt.title("Dark subtraction calibration (10 frames)")
+            plt.title(f"Frame: {file_path}")
             cbar.set_label('Intensity', rotation=270, labelpad=15)
 
             # Create RectangleSelector
@@ -87,6 +87,6 @@ def toggle_selector(event):
         toggle_selector.RS.set_active(True)
 
 if __name__ == "__main__":
-    file_path = "proof_of_concept\\images_cubert\\10_frame_dark_calib_ds.tiff"
+    file_path = "images\\cubert\\3_cubert_raw.tiff"
     get_tiff_shape(file_path) 
     display_first_channel(file_path)

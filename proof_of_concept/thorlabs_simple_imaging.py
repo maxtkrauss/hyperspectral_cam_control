@@ -8,13 +8,15 @@ import matplotlib.pyplot as plt
 tl.list_cameras_tlcam()
 cam = tl.ThorlabsTLCamera()
 
-cam.set_exposure(50e-3)
-cam.set_roi(0, 640, 0, 640, hbin=1, vbin=1)
+cam.set_exposure(100e-3)
+cam.set_roi(0, 2448, 0, 2408, hbin=1, vbin=1)
 frame = cam.snap()
 
-print("shape:", frame.shape)
+avg = np.average(frame)
+std = np.std(frame)
+print("shape:", frame.shape, "min:", np.min(frame), "max:", np.max(frame), "std:", std, "avg:", avg)
 
-plt.imshow(frame)
+plt.imshow(frame, vmin=avg-std, vmax=avg+std) # to better view dark frames
 plt.colorbar()
 plt.title("frame")
-np.save('thorlabs_img/frame.npy', frame)
+plt.show()
