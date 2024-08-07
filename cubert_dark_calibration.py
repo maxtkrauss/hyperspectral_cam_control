@@ -83,12 +83,21 @@ def do_dark_calibration():
 
     # Load each .cu3s file and add the data array to the list
     count = 0
-    for i in range(1,10):
-        file_path = os.path.join(recDir, f"Auto_00{i}.cu3s")
+    for i in range(1, n_calibration_frames+1):
+        file_path = os.path.join(recDir, "Auto_{:03d}.cu3s".format(i))
         measurement = cuvis.SessionFile(file_path)[0]
         data = measurement.data['cube']
         data_array = np.array(data.array)
         data_arrays.append(data_array)
+
+    #cuvis.shutdown() # why is it not implemented yet
+
+    # Deleting all cu3s and info files (except that f***ing last one)
+    print("Deleting cu3s files.")
+    for i in range(1, n_calibration_frames):
+        file_path = os.path.join(recDir, "Auto_{:03d}.cu3s".format(i))
+        os.remove(file_path) # automatically removes cu3s file
+        os.remove(file_path[:-4] + "info") # and info file
 
     # Stack the data arrays along a new axis and compute the average
     stacked_data = np.stack(data_arrays, axis=0)
