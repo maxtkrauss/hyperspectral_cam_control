@@ -4,6 +4,7 @@ import sys
 import time
 from datetime import timedelta
 import cuvis
+import numpy as np
 
 def do_dark_calibration():
 
@@ -30,7 +31,7 @@ def do_dark_calibration():
     # Parameters
     exposure = 250  # in ms
     distance = 700  # in mm
-    n_calibration_frames = 3
+    n_calibration_frames = 10
 
     # Start camera
     print("Loading user settings...")
@@ -67,17 +68,38 @@ def do_dark_calibration():
         mesu.append(m)
         res.append(r)
 
-    print(mesu[0])
+    # data_arrays = []
+    # for i in range(n_calibration_frames):
+    #     data_arrays.append(np.array(mesu[i].data['cube'].array))
 
-    # Save picture
-    for m in mesu:
-        if m is not None:
-            processingContext.apply(m)
-            cubeExporter.apply(m)
-            
-            print("Saving file done.")
-        else:
-            print("Saving file Failed")
+    for i in range(n_calibration_frames):
+        processingContext.apply(mesu[i])
+        cubeExporter.apply(mesu[i])
+
+    time.sleep(5)
+
+    # Initialize a list to store the data arrays
+    data_arrays = []
+
+    # Load each .cu3s file and add the data array to the list
+    count = 0
+    for i in range(1,10):
+        file_path = os.path.join(recDir, f"Auto_00{i}.cu3s")
+        measurement = cuvis.SessionFile(file_path)[0]
+        data = measurement.data['cube']
+        data_array = np.array(data.array)
+        data_arrays.append(data_array)
+
+    # Stack the data arrays along a new axis and compute the average
+    stacked_data = np.stack(data_arrays, axis=0)
+    average_data = np.mean(stacked_data, axis=0)
+
+    # Print the shape of the averaged data
+    print("Averaged data shape:", average_data.shape)
+    print("Averaged data (sample values):", average_data[0, 0, :])
+
+    # saving
+    np.save(f'images/calibration/cubert_dark/masterdark_cb_{exposure}ms.npy', average_data)
 
     print("Finished dark calibration")
 
