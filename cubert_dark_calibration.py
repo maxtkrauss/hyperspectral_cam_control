@@ -104,8 +104,12 @@ def do_dark_calibration():
     average_data = np.mean(stacked_data, axis=0)
 
     # Print the shape of the averaged data
-    print("Averaged data shape:", average_data.shape)
-    print("Averaged data (sample values):", average_data[0, 0, :])
+    print("Shape of Master Dark:", average_data.shape)
+    print("Max of Master Dark:", np.max(average_data))
+    print("Min of Master Dark:", np.min(average_data))
+    print("Std of Master Dark:", np.std(average_data))
+    # print("Averaged data shape:", average_data.shape)
+    # print("Averaged data (sample values):", average_data[0, 0, :])
 
     # saving
     np.save(f'images/calibration/cubert_dark/masterdark_cb_{exposure}ms.npy', average_data)

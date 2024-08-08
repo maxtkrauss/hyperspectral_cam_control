@@ -87,6 +87,6 @@ def toggle_selector(event):
         toggle_selector.RS.set_active(True)
 
 if __name__ == "__main__":
-    file_path = "images\\cubert\\3_cubert_raw.tiff"
+    file_path = "images\\cubert\\3_cubert.tif"
     get_tiff_shape(file_path) 
     display_first_channel(file_path)

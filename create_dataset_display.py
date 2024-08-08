@@ -11,6 +11,7 @@ import platform
 from datetime import timedelta
 
 from PIL import Image
+import tifffile
 import numpy as np
 
 ## Parameters
@@ -79,7 +80,7 @@ def main():
         # Save Thorlabs image
         im_tl = Image.fromarray(img_tl)
         im_tl.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
-        print(f"Saving TL cam image. (Max: {np.max(img_tl)}, Min: {np.min(img_tl)})")
+        print(f"Saved TL image as tiff. (Shape: {img_tl.shape}, Max: {np.max(img_tl)}, Min: {np.min(img_tl)}), Avg: {np.average(img_tl)}")
 
         # Taking and saving photo with Cubert cam
         take_and_save_cubert_image(img_name, dark_calibration_cb, acquisitionContext, processingContext)
@@ -92,8 +93,6 @@ def main():
             if e.type == pygame.QUIT:
                 print("Quitting.")
                 pygame.quit()
-
-        pass
 
     print("\nDataset creation finished. Quitting.")
     pygame.quit()
@@ -170,13 +169,12 @@ def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processin
             print("Export CB image to multi-channel .tif...")
             data_array = np.array(mesu.data['cube'].array)
             data_array = data_array.astype(float) - dark_cal.astype(float)
-            im_cb = Image.fromarray(data_array)
-            im_cb.save(os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif"))
-
+            path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
+            tifffile.imwrite(path, data_array,  photometric='minisblack')
             # multi_tiff_settings = cuvis.TiffExportSettings(export_dir=cubert_image_folder, format=cuvis.TiffFormat.MultiChannel)
             # multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
             # multiTiffExporter.apply(mesu)
-            print(f"Saved CB image as tiff. (Max: {np.max(data_array)}, Min: {np.min(data_array)})")
+            print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)})")
             break
         else:   
             print(f"CB image saving failed. Counter: {imaging_failed_counter}")
