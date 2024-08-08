@@ -92,7 +92,7 @@ def do_dark_calibration():
 
     #cuvis.shutdown() # why is it not implemented yet
 
-    # Deleting all cu3s and info files (except that f***ing last one)
+    # Deleting all cu3s and info files (except that last one)
     print("Deleting cu3s files.")
     for i in range(1, n_calibration_frames):
         file_path = os.path.join(recDir, "Auto_{:03d}.cu3s".format(i))

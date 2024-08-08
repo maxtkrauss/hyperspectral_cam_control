@@ -50,7 +50,7 @@ def main():
 
     # Calibrate the Cubert cam
     if do_dark_subtract_cb:
-        dark_calibration_cb = None
+        dark_calibration_cb = np.load(f"images//calibration//cubert_dark//masterdark_cb_{exposure_time_cb}ms.npy")
 
     # Set up the pygame display and images
     scrn, images_disp = setup_pygame_display(display_x, display_y, display_image_folder)
@@ -82,7 +82,7 @@ def main():
         print(f"Saving TL cam image. (Max: {np.max(img_tl)}, Min: {np.min(img_tl)})")
 
         # Taking and saving photo with Cubert cam
-        take_and_save_cubert_image(img_name, acquisitionContext, processingContext, cubeExporter)
+        take_and_save_cubert_image(img_name, dark_calibration_cb, acquisitionContext, processingContext)
 
         # wait half a second
         pygame.time.wait(500)
@@ -152,9 +152,10 @@ def setup_cubert_cam():
 
     return acquisitionContext, processingContext, cubeExporter
 
-def take_and_save_cubert_image(img_name, acquisitionContext, processingContext, cubeExporter):
+## take cubert image, extract raw data, do dark calibration and save that as a tiff
+def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processingContext):
     imaging_failed_counter = 0
-    # Try taking and siving images until it works.
+    # Try taking and siving images until it works (max 5 times).
     while imaging_failed_counter < 5:
         # Take photo with Cubert cam
         print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
@@ -165,11 +166,17 @@ def take_and_save_cubert_image(img_name, acquisitionContext, processingContext, 
         if mesu is not None:
             mesu.set_name(img_name[:-4] + "_cubert")
             processingContext.apply(mesu)
+
             print("Export CB image to multi-channel .tif...")
-            multi_tiff_settings = cuvis.TiffExportSettings(export_dir=cubert_image_folder, format=cuvis.TiffFormat.MultiChannel)
-            multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
-            multiTiffExporter.apply(mesu)
-            print("CB image saved.")
+            data_array = np.array(mesu.data['cube'].array)
+            data_array = data_array.astype(float) - dark_cal.astype(float)
+            im_cb = Image.fromarray(data_array)
+            im_cb.save(os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif"))
+
+            # multi_tiff_settings = cuvis.TiffExportSettings(export_dir=cubert_image_folder, format=cuvis.TiffFormat.MultiChannel)
+            # multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
+            # multiTiffExporter.apply(mesu)
+            print(f"Saved CB image as tiff. (Max: {np.max(data_array)}, Min: {np.min(data_array)})")
             break
         else:   
             print(f"CB image saving failed. Counter: {imaging_failed_counter}")
