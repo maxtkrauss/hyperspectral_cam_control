@@ -4,10 +4,14 @@ import sys
 import time
 from datetime import timedelta
 import cuvis
+import numpy as np
+import tifffile as tiff
 
 # Default directories and files:
 data_dir = None
 lib_dir = None
+
+dark_calibration_cb = np.load(f"images//calibration//cubert_dark//masterdark_cb_250ms.npy")
 
 if platform.system() == "Windows":
     lib_dir = os.getenv("CUVIS")
@@ -19,27 +23,17 @@ elif platform.system() == "Linux":
 # Default factory directory:
 factory_dir = os.path.join(lib_dir, os.pardir, "factory")
 
+
 # Default settings and output directories:
 userSettingsDir = os.path.join(data_dir, "settings")
 recDir = os.path.join(os.getcwd(), "proof_of_concept", "images_cubert")
-
-# Dark calibration images:
-dark_frame_paths = ["dark_1.cu3s",
-                    "dark_2.cu3s",
-                    "dark_3.cu3s",
-                    "dark_4.cu3s",
-                    "dark_5.cu3s",
-                    "dark_6.cu3s"
-                    ]
-
-dark_dir = [os.path.join(recDir, path) for path in dark_frame_paths]
 
 # Parameters
 exposure = 250  # in ms
 distance = 700  # in mm
 
 # TIFF filename:
-tiff_filename =  "10_frame_dark_calib"
+tiff_filename =  "calibration_testing"
 
 # Start camera
 print("Loading user settings...")
@@ -70,26 +64,20 @@ print("Image recording...")
 am = acquisitionContext.capture()
 mesu, res = am.get(timedelta(milliseconds=1000))
 
-# Load dark calibration images
-print("Loading dark and white calibration images...")
-dark = []
-for i in dark_dir:
-    dark.append(cuvis.SessionFile(i)[0])
-
-# # Set references in processing context
-for i in dark:
-    processingContext.set_reference(i, cuvis.ReferenceType.Dark)
-
 # Process image in raw
 if mesu is not None:
     mesu.set_name(tiff_filename)
     processingContext.apply(mesu)
-    cubeExporter.apply(mesu)
+    test = np.array(mesu.data['cube'].array)
+    print(test.shape)
+    test = test - dark_calibration_cb.astype(float)
+    result_data = np.maximum(test, 0)
+    tiff.imwrite("proof_of_concept\\images_cubert\\calib_test.tiff", result_data,  photometric='minisblack')
 
-    print("Export to Multi-Channel Tiff...")
-    multi_tiff_settings = cuvis.TiffExportSettings(export_dir=recDir, format=cuvis.TiffFormat.MultiChannel)
-    multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
-    multiTiffExporter.apply(mesu)
+    # print("Export to Multi-Channel Tiff...")
+    # multi_tiff_settings = cuvis.TiffExportSettings(export_dir=recDir, format=cuvis.TiffFormat.MultiChannel)
+    # multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
+    # multiTiffExporter.apply(mesu)
 
     print("Done")
 else:   
