@@ -57,47 +57,20 @@ def do_dark_calibration():
     acquisitionContext.integration_time = exposure
     processingContext.calc_distance(distance)
 
-    mesu = []
-    res = []
-
-    # Take pictures
-    for i in range(n_calibration_frames):
-        print("Image recording...")
-        am = acquisitionContext.capture()
-        m, r = am.get(timedelta(milliseconds=1000))
-        mesu.append(m)
-        res.append(r)
-
-    # data_arrays = []
-    # for i in range(n_calibration_frames):
-    #     data_arrays.append(np.array(mesu[i].data['cube'].array))
-
-    for i in range(n_calibration_frames):
-        processingContext.apply(mesu[i])
-        cubeExporter.apply(mesu[i])
-
-    time.sleep(5)
-
-    # Initialize a list to store the data arrays
     data_arrays = []
 
-    # Load each .cu3s file and add the data array to the list
-    count = 0
-    for i in range(1, n_calibration_frames+1):
-        file_path = os.path.join(recDir, "Auto_{:03d}.cu3s".format(i))
-        measurement = cuvis.SessionFile(file_path)[0]
-        data = measurement.data['cube']
-        data_array = np.array(data.array)
-        data_arrays.append(data_array)
-
-    #cuvis.shutdown() # why is it not implemented yet
-
-    # Deleting all cu3s and info files (except that last one)
-    print("Deleting cu3s files.")
-    for i in range(1, n_calibration_frames):
-        file_path = os.path.join(recDir, "Auto_{:03d}.cu3s".format(i))
-        os.remove(file_path) # automatically removes cu3s file
-        os.remove(file_path[:-4] + "info") # and info file
+    # Take pictures
+    i = 0
+    while i < n_calibration_frames:
+        print(f"Image recording... {i}")
+        am = acquisitionContext.capture()
+        m, r = am.get(timedelta(milliseconds=1000))
+        if m is not None:
+            processingContext.apply(m)
+            data_arrays.append(np.array(m.data['cube'].array))
+            i += 1
+        else:
+            print("Imaging failed. Trying again.")
 
     # Stack the data arrays along a new axis and compute the average
     stacked_data = np.stack(data_arrays, axis=0)

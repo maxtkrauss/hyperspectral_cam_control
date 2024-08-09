@@ -18,6 +18,7 @@ print("shape:", frame.shape, "min:", np.min(frame), "max:", np.max(frame), "std:
 
 plt.imshow(frame)# vmin=avg-std, vmax=avg+std) # to better view dark frames
 plt.colorbar()
+plt.Colormap('gray')
 plt.title("frame")
 plt.show()
 

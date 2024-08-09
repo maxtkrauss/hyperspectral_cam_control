@@ -73,6 +73,7 @@ def main():
         # Take photo with Thorlabs cam
         if do_dark_subtract_tl:
             img_tl = cam_tl.snap() - dark_calibration_tl
+            img_tl = np.maximum(img_tl, 0)
         else:
             img_tl = cam_tl.snap()
         print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
@@ -171,6 +172,7 @@ def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processin
             # dark subtraction
             if do_dark_subtract_cb:
                 data_array = data_array.astype(float) - dark_cal.astype(float)
+                data_array = np.maximum(data_array, 0)
             else:
                 data_array = data_array.astype(float)
             # save as tif
