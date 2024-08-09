@@ -165,20 +165,22 @@ def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processin
         if mesu is not None:
             mesu.set_name(img_name[:-4] + "_cubert")
             processingContext.apply(mesu)
-
             print("Export CB image to multi-channel .tif...")
+            # get array from mesurement
             data_array = np.array(mesu.data['cube'].array)
-            data_array = data_array.astype(float) - dark_cal.astype(float)
+            # dark subtraction
+            if do_dark_subtract_cb:
+                data_array = data_array.astype(float) - dark_cal.astype(float)
+            else:
+                data_array = data_array.astype(float)
+            # save
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
-            # multi_tiff_settings = cuvis.TiffExportSettings(export_dir=cubert_image_folder, format=cuvis.TiffFormat.MultiChannel)
-            # multiTiffExporter = cuvis.TiffExporter(multi_tiff_settings)
-            # multiTiffExporter.apply(mesu)
             print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)})")
-            break
+            break # end while loop if successfully saving image
         else:   
-            print(f"CB image saving failed. Counter: {imaging_failed_counter}")
             imaging_failed_counter += 1
+            print(f"CB image saving failed. Counter: {imaging_failed_counter}")
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_path):
