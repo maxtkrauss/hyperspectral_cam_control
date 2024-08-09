@@ -173,11 +173,12 @@ def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processin
                 data_array = data_array.astype(float) - dark_cal.astype(float)
             else:
                 data_array = data_array.astype(float)
-            # save
+            # save as tif
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
             print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)})")
-            break # end while loop if successfully saving image
+            # end while loop
+            break
         else:   
             imaging_failed_counter += 1
             print(f"CB image saving failed. Counter: {imaging_failed_counter}")
