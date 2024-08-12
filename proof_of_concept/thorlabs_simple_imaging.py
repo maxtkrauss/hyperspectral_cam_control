@@ -22,7 +22,6 @@ plt.Colormap('gray')
 plt.title("frame")
 plt.show()
 
-
 # Measuring averages of just white background
 # just lens, 69cm from front lens, f2, 10ms: 2315
 # just lens, 69cm from front lens, f2.8, 10ms: 1535
