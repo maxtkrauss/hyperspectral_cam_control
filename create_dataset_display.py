@@ -196,7 +196,6 @@ def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processin
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
-def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
     # Pygame and display setup
     pygame.init()
     try:
