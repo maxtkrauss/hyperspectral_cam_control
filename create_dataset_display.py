@@ -57,6 +57,7 @@ def main():
 
     # Set up the pygame display and images
     scrn, images_disp = setup_pygame_display(display_x, display_y, img_size_x, img_size_y, display_image_folder)
+    scrn, images_disp = setup_pygame_display(display_x, display_y, img_size_x, img_size_y, display_image_folder)
     print("Pygame setup done.")
 
     # Wait a few seconds so the monitor can update
@@ -67,6 +68,7 @@ def main():
 
         # Display image
         img_data, img_center, img_name = img_disp
+        img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
         img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
         scrn.blit(img_data, img_center) # image data, image center
         pygame.display.flip()
@@ -190,12 +192,15 @@ def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processin
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
+def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
     # Pygame and display setup
     pygame.init()
     try:
         scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN, display=1) # show on second monitor
+        scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN, display=1) # show on second monitor
     except:
         print("No second monitor available, using main monitor.")
+        scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN)
         scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN)
 
     def transformScaleKeepRatio(image, size):
@@ -212,6 +217,7 @@ def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
     print("Filenames:", filenames)
     for name in filenames:
         img = pygame.image.load(os.path.join(img_path, name))
+        images.append((*transformScaleKeepRatio(img, (img_size_x, img_size_y)), name))
         images.append((*transformScaleKeepRatio(img, (img_size_x, img_size_y)), name))
 
     return scrn, images
