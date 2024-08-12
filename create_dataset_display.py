@@ -86,7 +86,7 @@ def main():
         # Save Thorlabs image
         im_tl = Image.fromarray(img_tl)
         im_tl.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
-        print(f"Saved TL image as tiff. (Shape: {img_tl.shape}, Max: {np.max(img_tl)}, Min: {np.min(img_tl)}), Avg: {np.average(img_tl)}")
+        print(f"Saved TL image as tiff. (Shape: {img_tl.shape}, Max: {np.max(img_tl)}, Min: {np.min(img_tl)}, Avg: {np.average(img_tl)}, SNR: {snr(img_tl)})")
 
         # Taking and saving photo with Cubert cam
         take_and_save_cubert_image(img_name, dark_calibration_cb, acquisitionContext, processingContext)
@@ -96,7 +96,7 @@ def main():
 
         # test if pygame should stop
         for e in pygame.event.get():
-            if e.type == pygame.QUIT:
+            if e.type == pygame.QUIT or e.type == pygame.KEYDOWN:
                 print("Quitting.")
                 pygame.quit()
 
@@ -111,6 +111,10 @@ def setup_thorlabs_cam():
     cam.set_exposure(exposure_time_tl * 1e-3)
     cam.set_roi(*roi_tl, hbin=1, vbin=1)
     return cam
+
+## take cubert image as array, do dark calibration and save that as a tiff
+def take_and_save_thorlabs_image(img_name, cam_tl):
+    pass
 
 ## setup everything for the Thorlabs camera
 def setup_cubert_cam():
@@ -183,7 +187,7 @@ def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processin
             # save as tif
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
-            print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)})")
+            print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
             # end while loop
             break
         else:   
@@ -217,6 +221,17 @@ def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
         images.append((*transformScaleKeepRatio(img, (img_size_x, img_size_y)), name))
 
     return scrn, images
+
+## display image on screen with pygame
+def display_image(img_disp, scrn):
+    pass
+
+## calc SNR
+def snr(img, axis=None, ddof=0):
+    img = np.asanyarray(img)
+    m = img.mean(axis)
+    sd = img.std(axis=axis, ddof=ddof)
+    return np.where(sd == 0, 0, m/sd)
 
 ## Run main
 if __name__ == "__main__":
