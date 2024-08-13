@@ -11,6 +11,7 @@ from datetime import timedelta
 from PIL import Image
 import tifffile
 import numpy as np
+import polanalyser as pa
 
 ## Parameters
 display_image_folder = 'images/display'
@@ -29,10 +30,12 @@ exposure_time_cb = 250 # in ms
 
 # Additional paramters for Thorlabs cam
 do_dark_subtract_tl = True
+path_dark_tl = f"images//calibration//thorlabs_dark//masterdark_tl_{exposure_time_tl}ms.npy"
 roi_tl = (0, 2448, 0, 2048)
 
 # Additional paramters for Cubert cam
 do_dark_subtract_cb = True
+path_dark_cb = f"images//calibration//cubert_dark//masterdark_cb_{exposure_time_cb}ms.npy"
 distance_cb = 1000 # in mm
 get_time_cb = 2000 # in ms
 
@@ -45,7 +48,7 @@ def main():
 
     # Get Thorlabs masterdark calibration frame
     if do_dark_subtract_tl:
-        dark_calibration_tl = np.load(f"images//calibration//thorlabs_dark//masterdark_tl_{exposure_time_tl}ms.npy")
+        dark_calibration_tl = np.load(path_dark_tl)
 
     # Setup the the Cubert cam
     acquisitionContext, processingContext, cubeExporter = setup_cubert_cam()
@@ -53,7 +56,7 @@ def main():
 
     # Calibrate the Cubert cam
     if do_dark_subtract_cb:
-        dark_calibration_cb = np.load(f"images//calibration//cubert_dark//masterdark_cb_{exposure_time_cb}ms.npy")
+        dark_calibration_cb = np.load(path_dark_cb)
 
     # Set up the pygame display and images
     scrn, images_disp = setup_pygame_display(display_x, display_y, img_size_x, img_size_y, display_image_folder)
@@ -105,9 +108,12 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
         img_tl = cam_tl.snap()
     print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
 
-    # Save Thorlabs image
+    # Demonsaicing to different polarization channels
     im_tl = Image.fromarray(img_tl)
-    im_tl.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
+    im_tl_pol = pa.demosaicing(img_raw=im_tl, code=pa.COLOR_PolarMono)
+
+    # Save Thorlabs image
+    im_tl_pol.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
     print(f"Saved TL image as tiff. (Shape: {img_tl.shape}, Max: {np.max(img_tl)}, Min: {np.min(img_tl)}, Avg: {np.average(img_tl)}, SNR: {snr(img_tl)})")
 
 ## setup everything for the Thorlabs camera
