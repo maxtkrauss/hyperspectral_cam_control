@@ -36,6 +36,8 @@ def load_images(tl_file, cb_file):
 
 # Update the plot with the selected images and channel
 def update_plot(tl_file, cb_file, channel):
+    global cb_image  # Make sure cb_image is accessible in the callback
+
     tl_image, cb_image = load_images(tl_file, cb_file)
 
     # Clear the current plot
@@ -107,7 +109,7 @@ def snr(img, axis=None, ddof=0):
 
 # Callback function for region selection
 def onselect(eclick, erelease):
-    global selected_regions
+    global selected_regions, cb_image
 
     # Get the coordinates of the rectangle
     x1, y1 = int(eclick.xdata), int(eclick.ydata)
@@ -157,7 +159,6 @@ def onselect(eclick, erelease):
 
     # Redraw the figure
     fig.canvas.draw_idle()
-
 
 # Create the plot
 fig, (ax_tl, ax_cb, ax_intensity) = plt.subplots(1, 3, figsize=(18, 6))
