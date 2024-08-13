@@ -69,7 +69,7 @@ def main():
         # Display image
         img_name = display_image(img_disp=img_disp, scrn=scrn)
 
-        # Take photo with Thorlabs cam
+        # Taking and saving photo with Thorlabs cam
         take_and_save_thorlabs_image(img_name=img_name, dark_cal=dark_calibration_tl, cam_tl=cam_tl)
 
         # Taking and saving photo with Cubert cam
