@@ -29,7 +29,7 @@ def do_dark_calibration():
     recDir = os.path.join(os.getcwd(), "images", "calibration", "cubert_dark")
 
     # Parameters
-    exposure = 250  # in ms
+    exposure = 300  # in ms
     distance = 700  # in mm
     n_calibration_frames = 10
 
