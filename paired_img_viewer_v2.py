@@ -36,6 +36,8 @@ def load_images(tl_file, cb_file):
 
 # Update the plot with the selected images and channel
 def update_plot(tl_file, cb_file, channel):
+    global cb_image  # Make sure cb_image is accessible in the callback
+
     tl_image, cb_image = load_images(tl_file, cb_file)
 
     # Clear the current plot
@@ -43,11 +45,11 @@ def update_plot(tl_file, cb_file, channel):
     ax_cb.clear()
 
     # Plot Thorlabs image
-    ax_tl.imshow(tl_image, cmap='viridis')
+    im_tl = ax_tl.imshow(tl_image, cmap='viridis')
     ax_tl.set_title(f"Thorlabs Image: {tl_file}")
 
     # Plot selected channel of Cubert image
-    ax_cb.imshow(cb_image[:, :, channel], cmap='viridis')
+    im_cb = ax_cb.imshow(cb_image[:, :, channel], cmap='viridis')
     wavelength = wavelengths[channel]
     ax_cb.set_title(f"Cubert Image: {cb_file} (Channel {channel + 1}/{cb_image.shape[2]}, {wavelength:.1f} nm)")
 
@@ -97,9 +99,8 @@ def get_color_from_wavelength(wavelength):
         return "Out of Visible Range"
 
 # Callback function for region selection
-# Callback function for region selection
 def onselect(eclick, erelease):
-    global selected_regions
+    global selected_regions, cb_image
 
     # Get the coordinates of the rectangle
     x1, y1 = int(eclick.xdata), int(eclick.ydata)
@@ -149,7 +150,6 @@ def onselect(eclick, erelease):
 
     # Redraw the figure
     fig.canvas.draw_idle()
-
 
 # Create the plot
 fig, (ax_tl, ax_cb, ax_intensity) = plt.subplots(1, 3, figsize=(18, 6))
