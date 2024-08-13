@@ -98,6 +98,13 @@ def get_color_from_wavelength(wavelength):
     else:
         return "Out of Visible Range"
 
+# calc SNR
+def snr(img, axis=None, ddof=0):
+    img = np.asanyarray(img)
+    m = img.mean(axis)
+    sd = img.std(axis=axis, ddof=ddof)
+    return np.where(sd == 0, 0, m/sd)
+
 # Callback function for region selection
 def onselect(eclick, erelease):
     global selected_regions
@@ -135,7 +142,7 @@ def onselect(eclick, erelease):
             # Write peak wavelength in the top-right corner of the plot
             ax_intensity.text(
                 0.95, 0.95,  # x, y position in axes coordinates (0.95, 0.95) corresponds to the top-right corner
-                f'Peak: {peak_wavelength:.1f} nm\nColor: {color}',
+                f'Peak: {peak_wavelength:.1f} nm\nColor: {color}\nSNR: {snr(selected_area)}',
                 transform=ax_intensity.transAxes,  # Use axes coordinates for positioning
                 fontsize=10,
                 verticalalignment='top',
