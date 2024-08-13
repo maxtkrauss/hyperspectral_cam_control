@@ -67,29 +67,13 @@ def main():
     for img_disp in images_disp:
 
         # Display image
-        img_data, img_center, img_name = img_disp
-        img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
-        img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
-        scrn.blit(img_data, img_center) # image data, image center
-        pygame.display.flip()
-        pygame.display.set_caption(img_name) # image name
-        print(f"\nShowing image {img_name} on display.")
+        img_name = display_image(img_disp=img_disp, scrn=scrn)
 
         # Take photo with Thorlabs cam
-        if do_dark_subtract_tl:
-            img_tl = cam_tl.snap() - dark_calibration_tl
-            img_tl = np.maximum(img_tl, 0)
-        else:
-            img_tl = cam_tl.snap()
-        print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
-
-        # Save Thorlabs image
-        im_tl = Image.fromarray(img_tl)
-        im_tl.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
-        print(f"Saved TL image as tiff. (Shape: {img_tl.shape}, Max: {np.max(img_tl)}, Min: {np.min(img_tl)}, Avg: {np.average(img_tl)}, SNR: {snr(img_tl)})")
+        take_and_save_thorlabs_image(img_name=img_name, dark_cal=dark_calibration_tl, cam_tl=cam_tl)
 
         # Taking and saving photo with Cubert cam
-        take_and_save_cubert_image(img_name, dark_calibration_cb, acquisitionContext, processingContext)
+        take_and_save_cubert_image(img_name=img_name, dark_cal=dark_calibration_cb, acquContext=acquisitionContext, procContext=processingContext)
 
         # wait half a second
         pygame.time.wait(500)
@@ -113,8 +97,18 @@ def setup_thorlabs_cam():
     return cam
 
 ## take cubert image as array, do dark calibration and save that as a tiff
-def take_and_save_thorlabs_image(img_name, cam_tl):
-    pass
+def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
+    if do_dark_subtract_tl:
+        img_tl = cam_tl.snap() - dark_cal
+        img_tl = np.maximum(img_tl, 0)
+    else:
+        img_tl = cam_tl.snap()
+    print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
+
+    # Save Thorlabs image
+    im_tl = Image.fromarray(img_tl)
+    im_tl.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
+    print(f"Saved TL image as tiff. (Shape: {img_tl.shape}, Max: {np.max(img_tl)}, Min: {np.min(img_tl)}, Avg: {np.average(img_tl)}, SNR: {snr(img_tl)})")
 
 ## setup everything for the Thorlabs camera
 def setup_cubert_cam():
@@ -162,19 +156,19 @@ def setup_cubert_cam():
     return acquisitionContext, processingContext, cubeExporter
 
 ## take cubert image, extract raw data, do dark calibration and save that as a tiff
-def take_and_save_cubert_image(img_name, dark_cal, acquisitionContext, processingContext):
+def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
     imaging_failed_counter = 0
     # Try taking and siving images until it works (max 5 times).
     while imaging_failed_counter < 5:
         # Take photo with Cubert cam
         print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
-        am = acquisitionContext.capture()
+        am = acquContext.capture()
         mesu, res = am.get(timedelta(milliseconds=get_time_cb))
 
         # Save Cubert image
         if mesu is not None:
             mesu.set_name(img_name[:-4] + "_cubert")
-            processingContext.apply(mesu)
+            procContext.apply(mesu)
             print("Export CB image to multi-channel .tif...")
             # get array from mesurement
             data_array = np.array(mesu.data['cube'].array)
@@ -227,7 +221,14 @@ def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
 
 ## display image on screen with pygame
 def display_image(img_disp, scrn):
-    pass
+    img_data, img_center, img_name = img_disp
+    img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
+    img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
+    scrn.blit(img_data, img_center) # image data, image center
+    pygame.display.flip()
+    pygame.display.set_caption(img_name) # image name
+    print(f"\nShowing image {img_name} on display.")
+    return img_name
 
 ## calc SNR
 def snr(img, axis=None, ddof=0):
