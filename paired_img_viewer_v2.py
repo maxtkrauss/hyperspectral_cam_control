@@ -43,15 +43,17 @@ def update_plot(tl_file, cb_file, channel):
     ax_cb.clear()
 
     # Plot Thorlabs image
-    ax_tl.imshow(tl_image, cmap='viridis')
+    im_tl = ax_tl.imshow(tl_image[0], cmap='viridis')
     ax_tl.set_title(f"Thorlabs Image: {tl_file}")
 
     # Plot selected channel of Cubert image
-    ax_cb.imshow(cb_image[:, :, channel], cmap='viridis')
+    im_cb = ax_cb.imshow(cb_image[channel, :, :], cmap='viridis')
     wavelength = wavelengths[channel]
     ax_cb.set_title(f"Cubert Image: {cb_file} (Channel {channel + 1}/{cb_image.shape[2]}, {wavelength:.1f} nm)")
 
     # Redraw the figure
+    fig.colorbar(im_tl)
+    fig.colorbar(im_cb)
     fig.canvas.draw_idle()
 
 # Change the Thorlabs file
@@ -97,7 +99,6 @@ def get_color_from_wavelength(wavelength):
         return "Out of Visible Range"
 
 # Callback function for region selection
-# Callback function for region selection
 def onselect(eclick, erelease):
     global selected_regions
 
@@ -112,10 +113,10 @@ def onselect(eclick, erelease):
         y1, y2 = y2, y1
 
     # Extract the reflectance values for the selected area
-    selected_area = cb_image[y1:y2+1, x1:x2+1, :]
+    selected_area = cb_image[:, y1:y2+1, x1:x2+1]
 
     # Calculate the average reflectance values for the selected area
-    reflectance_values = np.mean(selected_area, axis=(0, 1))
+    reflectance_values = np.mean(selected_area, axis=(1, 2))
 
     # Store the normalized reflectance values and color for this selection
     selected_regions.append(reflectance_values)
@@ -176,7 +177,7 @@ channel_slider = Slider(
     ax=ax_channel_slider,
     label='Cubert Channel',
     valmin=0,
-    valmax=cb_image.shape[2] - 1,
+    valmax=cb_image.shape[0] - 1,
     valinit=current_channel,
     valstep=1
 )

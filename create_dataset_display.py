@@ -8,7 +8,6 @@ import time
 import platform
 from datetime import timedelta
 
-from PIL import Image
 import tifffile
 import numpy as np
 import polanalyser as pa
@@ -109,12 +108,15 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
     print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
 
     # Demonsaicing to different polarization channels
-    im_tl = Image.fromarray(img_tl)
-    im_tl_pol = pa.demosaicing(img_raw=im_tl, code=pa.COLOR_PolarMono)
+    img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
+
+    # Crop to size of DFA
+    # img_tl_pol = img_tl_pol[:, 850:1650, 550:1350]
 
     # Save Thorlabs image
-    im_tl_pol.save(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
-    print(f"Saved TL image as tiff. (Shape: {img_tl.shape}, Max: {np.max(img_tl)}, Min: {np.min(img_tl)}, Avg: {np.average(img_tl)}, SNR: {snr(img_tl)})")
+    path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
+    tifffile.imwrite(path, img_tl_pol,  photometric='minisblack')
+    print(f"Saved TL image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
 
 ## setup everything for the Thorlabs camera
 def setup_cubert_cam():
@@ -184,6 +186,8 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
                 data_array = np.maximum(data_array, 0)
             else:
                 data_array = data_array.astype(float)
+            # switch third (spectral) dimension to first dimension
+            data_array = data_array.transpose(2,0,1)
             # save as tif
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
