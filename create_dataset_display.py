@@ -35,8 +35,8 @@ roi_tl = (0, 2448, 0, 2048)
 # Additional paramters for Cubert cam
 do_dark_subtract_cb = True
 path_dark_cb = f"images//calibration//cubert_dark//masterdark_cb_{exposure_time_cb}ms.npy"
-distance_cb = 1000 # in mm
-get_time_cb = 2000 # in ms
+distance_cb = 640 # in mm
+get_time_cb = 1000 # in ms
 
 
 ## Main function
@@ -58,7 +58,6 @@ def main():
         dark_calibration_cb = np.load(path_dark_cb)
 
     # Set up the pygame display and images
-    scrn, images_disp = setup_pygame_display(display_x, display_y, img_size_x, img_size_y, display_image_folder)
     scrn, images_disp = setup_pygame_display(display_x, display_y, img_size_x, img_size_y, display_image_folder)
     print("Pygame setup done.")
 
@@ -111,7 +110,7 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
     img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
 
     # Crop to size of DFA
-    # img_tl_pol = img_tl_pol[:, 850:1650, 550:1350]
+    img_tl_pol = img_tl_pol[:, 850:1650, 550:1350]
 
     # Save Thorlabs image
     path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
@@ -188,6 +187,8 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
                 data_array = data_array.astype(float)
             # switch third (spectral) dimension to first dimension
             data_array = data_array.transpose(2,0,1)
+            # crop cube
+            data_array = data_array[:, 0:200, 100:300]
             # save as tif
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
@@ -204,10 +205,8 @@ def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
     pygame.init()
     try:
         scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN, display=1) # show on second monitor
-        scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN, display=1) # show on second monitor
     except:
         print("No second monitor available, using main monitor.")
-        scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN)
         scrn = pygame.display.set_mode((X, Y), pygame.FULLSCREEN)
 
     def transformScaleKeepRatio(image, size):
@@ -225,14 +224,12 @@ def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
     for name in filenames:
         img = pygame.image.load(os.path.join(img_path, name))
         images.append((*transformScaleKeepRatio(img, (img_size_x, img_size_y)), name))
-        images.append((*transformScaleKeepRatio(img, (img_size_x, img_size_y)), name))
 
     return scrn, images
 
 ## display image on screen with pygame
 def display_image(img_disp, scrn):
     img_data, img_center, img_name = img_disp
-    img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
     img_center.center = (display_x//2 + img_offset_x, display_y//2 + img_offset_y)
     scrn.blit(img_data, img_center) # image data, image center
     pygame.display.flip()
