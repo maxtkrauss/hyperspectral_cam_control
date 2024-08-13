@@ -6,14 +6,18 @@ import tifffile
 from matplotlib.widgets import RectangleSelector
 
 # Load the image
-image_path = 'images\\thorlabs\\10_thorlabs.tif'
+image_path = 'images\\thorlabs\\10_thorlabs_demos.tif'
 tif = tifffile.imread(image_path)
+image = tif[:, :, :]
+print(f"Shape of tiff after demosaicing:{image.shape}")
+
 image = tif[3, :, :]
 
 
 # Create the plot
 fig, ax = plt.subplots()
-ax.imshow(image, cmap='viridis')
+img = ax.imshow(image, cmap='viridis')
+fig.colorbar(img, ax = ax)
 ax.set_title("SNR Calculator")
 
 # Callback function for region selection
@@ -64,6 +68,7 @@ def SNR(img, axis=None, ddof=0):
     mean_value = img.mean(axis)
     stddev_value = img.std(axis=axis, ddof=ddof)
     snr = np.where(stddev_value == 0, 0, mean_value / stddev_value)
+
     
     print(f"Mean: {mean_value}, Standard Deviation: {stddev_value}, SNR: {snr}")
     
