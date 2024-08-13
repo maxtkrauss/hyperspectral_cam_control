@@ -112,19 +112,15 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
     print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
 
     # Demonsaicing to different polarization channels
-    # img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
+    img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
 
     # Crop to size of DFA
-<<<<<<< HEAD
-    #img_tl_pol = img_tl_pol[:, 850:1650, 550:1350]
-=======
     img_tl_pol = img_tl_pol[:, 550-50:1350+50, 850-50:1650+50]
->>>>>>> 398fb7d2235921de69d68b5a3ea55f0abaed97e7
 
     # Save Thorlabs image
     path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
-    tifffile.imwrite(path, img_tl,  photometric='minisblack')
-    # print(f"Saved TL image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
+    tifffile.imwrite(path, img_tl_pol,  photometric='minisblack')
+    print(f"Saved TL image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
 
 ## setup everything for the Thorlabs camera
 def setup_cubert_cam():
