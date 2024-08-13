@@ -24,8 +24,13 @@ img_size_y = 240
 img_offset_x = 0
 img_offset_y = 250
 
+<<<<<<< HEAD
 exposure_time_tl = 1000 # in ms
 exposure_time_cb = 250 # in ms
+=======
+exposure_time_tl = 100 # in ms
+exposure_time_cb = 300 # in ms
+>>>>>>> 398fb7d2235921de69d68b5a3ea55f0abaed97e7
 
 # Additional paramters for Thorlabs cam
 do_dark_subtract_tl = True
@@ -110,7 +115,11 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
     # img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
 
     # Crop to size of DFA
+<<<<<<< HEAD
     #img_tl_pol = img_tl_pol[:, 850:1650, 550:1350]
+=======
+    img_tl_pol = img_tl_pol[:, 550-50:1350+50, 850-50:1650+50]
+>>>>>>> 398fb7d2235921de69d68b5a3ea55f0abaed97e7
 
     # Save Thorlabs image
     path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
@@ -188,7 +197,7 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             # switch third (spectral) dimension to first dimension
             data_array = data_array.transpose(2,0,1)
             # crop cube
-            data_array = data_array[:, 0:200, 100:300]
+            data_array = data_array[:, 190:232, 170:212]
             # save as tif
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
