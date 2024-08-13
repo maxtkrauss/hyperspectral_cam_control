@@ -40,13 +40,13 @@ def update_plot(tl_file, cb_file, channel):
     ax_cb.clear()
 
     # Plot Thorlabs image
-    ax_tl.imshow(tl_image, cmap='viridis')
+    ax_tl.imshow(tl_image[0], cmap='viridis')
     ax_tl.set_title(f"Thorlabs Image: {tl_file}")
 
     # Plot selected channel of Cubert image
-    ax_cb.imshow(cb_image[:, :, channel], cmap='viridis')
+    ax_cb.imshow(cb_image[channel, :, :], cmap='viridis')
     wavelength = wavelengths[channel]
-    ax_cb.set_title(f"Cubert Image: {cb_file} (Channel {channel + 1}/{cb_image.shape[2]}, {wavelength:.1f} nm)")
+    ax_cb.set_title(f"Cubert Image: {cb_file} (Channel {channel + 1}/{cb_image.shape[0]}, {wavelength:.1f} nm)")
 
     # Redraw the figure
     fig.canvas.draw_idle()
@@ -66,7 +66,7 @@ def change_cubert_file(text):
     if text in cubert_files:
         current_cb_file = text
         update_plot(current_tl_file, current_cb_file, current_channel)
-        channel_slider.valmax = load_images(current_tl_file, current_cb_file)[1].shape[2] - 1
+        channel_slider.valmax = load_images(current_tl_file, current_cb_file)[1].shape[0] - 1
         channel_slider.set_val(current_channel)  # Update channel slider to new file's channel count
     else:
         print(f"File '{text}' not found in Cubert folder.")
@@ -98,7 +98,7 @@ channel_slider = Slider(
     ax=ax_channel_slider,
     label='Cubert Channel',
     valmin=0,
-    valmax=load_images(current_tl_file, current_cb_file)[1].shape[2] - 1,
+    valmax=load_images(current_tl_file, current_cb_file)[1].shape[0] - 1,
     valinit=current_channel,
     valstep=1
 )
