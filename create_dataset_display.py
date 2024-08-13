@@ -24,13 +24,8 @@ img_size_y = 240
 img_offset_x = 0
 img_offset_y = 250
 
-<<<<<<< HEAD
 exposure_time_tl = 1000 # in ms
 exposure_time_cb = 250 # in ms
-=======
-exposure_time_tl = 100 # in ms
-exposure_time_cb = 300 # in ms
->>>>>>> 398fb7d2235921de69d68b5a3ea55f0abaed97e7
 
 # Additional paramters for Thorlabs cam
 do_dark_subtract_tl = True
