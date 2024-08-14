@@ -93,7 +93,7 @@ def change_cubert_file(text):
         current_cb_file = text
         cb_image = load_cb_image(current_cb_file)
         update_cb_plot(current_cb_file, current_channel)
-        channel_slider.valmax = load_images(current_tl_file, current_cb_file)[1].shape[2] - 1
+        channel_slider.valmax = load_cb_image(current_cb_file).shape[2] - 1
         channel_slider.set_val(current_channel)  # Update channel slider to new file's channel count
     else:
         print(f"File '{text}' not found in Cubert folder.")
