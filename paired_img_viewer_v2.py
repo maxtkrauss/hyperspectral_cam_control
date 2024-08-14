@@ -21,6 +21,10 @@ wavelengths = np.linspace(450, 850, 106)  # Assuming 106 channels from 450-850 n
 # List to keep track of multiple selected regions
 selected_regions = []
 
+# colorbars have to be global to update
+colorbar_tl = None
+colorbar_cb = None
+
 # Load images
 def load_images(tl_file, cb_file):
     tl_image_path = os.path.join(thorlabs_image_folder, tl_file)
@@ -37,6 +41,7 @@ def load_images(tl_file, cb_file):
 # Update the plot with the selected images and channel
 def update_plot(tl_file, cb_file, channel):
     global cb_image  # Make sure cb_image is accessible in the callback
+    global colorbar_cb, colorbar_tl
 
     tl_image, cb_image = load_images(tl_file, cb_file)
 
@@ -54,8 +59,12 @@ def update_plot(tl_file, cb_file, channel):
     ax_cb.set_title(f"Cubert Image: {cb_file} (Channel {channel + 1}/{cb_image.shape[2]}, {wavelength:.1f} nm)")
 
     # Redraw the figure
-    fig.colorbar(im_tl)
-    fig.colorbar(im_cb)
+    if colorbar_tl != None:
+        colorbar_tl.update_normal(im_tl)
+        colorbar_cb.update_normal(im_cb)
+    else:
+        colorbar_tl = plt.colorbar(im_tl)
+        colorbar_cb = plt.colorbar(im_cb)
     fig.canvas.draw_idle()
 
 # Change the Thorlabs file
