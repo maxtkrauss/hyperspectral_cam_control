@@ -51,7 +51,7 @@ def update_cb_plot(cb_file, channel):
     wavelength = wavelengths[channel]
     ax_cb.set_title(f"Cubert Image: {cb_file} (Channel {channel}/{cb_image.shape[0]-1}, {wavelength:.1f} nm)")
     ax_cb.annotate(f"Channel Stats: \nSNR: {snr(img):.2f}, Min: {np.min(img):.2f}, Max: {np.max(img):.2f}, Avg: {np.mean(img):.2f}, Std: {np.std(img):.2f}", 
-                   (0,-0.18), xycoords='axes fraction')
+                   (-0.05,-0.18), xycoords='axes fraction')
     # create or update colorbars
     if colorbar_cb != None:
         colorbar_cb.update_normal(im_cb)
@@ -75,7 +75,7 @@ def update_tl_plot(tl_file, pol):
     im_tl = ax_tl.imshow(img, cmap='viridis')
     ax_tl.set_title(f"Thorlabs Image: {tl_file}")
     ax_tl.annotate(f"Channel Stats: \nSNR: {snr(img):.2f}, Min: {np.min(img):.2f}, Max: {np.max(img):.2f}, Avg: {np.mean(img):.2f}, Std: {np.std(img):.2f}", 
-                   (0,-0.18), xycoords='axes fraction')
+                   (-0.05,-0.18), xycoords='axes fraction')
 
     # create or update colorbars
     if colorbar_tl != None:
@@ -149,6 +149,18 @@ def next_image(_):
     update_cb_plot(current_cb_file, current_channel)
     print(f"Showing next images: {current_tl_file} (TL), {current_cb_file} (CB)")
 
+# Show prev image
+def prev_image(_):
+    global cb_image, tl_image, current_img_index
+    current_img_index -= 1
+    current_tl_file = thorlabs_files[current_img_index%len(thorlabs_files)]
+    current_cb_file = cubert_files[current_img_index%len(cubert_files)]
+    tl_image = load_tl_image(current_tl_file)
+    cb_image = load_cb_image(current_cb_file)
+    update_tl_plot(current_tl_file, current_pol)
+    update_cb_plot(current_cb_file, current_channel)
+    print(f"Showing previous images: {current_tl_file} (TL), {current_cb_file} (CB)")
+
 # Calc SNR
 def snr(img, axis=None, ddof=0):
     img = np.asanyarray(img)
@@ -193,7 +205,7 @@ def onselect(eclick, erelease):
             # Write peak wavelength in the top-right corner of the plot
             ax_intensity.text(
                 0.95, 0.95,  # x, y position in axes coordinates (0.95, 0.95) corresponds to the top-right corner
-                f'Peak: {peak_wavelength:.1f} nm\nColor: {color}\nSNR (full spectrum): {snr(selected_area):.2f}',
+                f'Peak: {peak_wavelength:.1f} nm\nColor: {color}\nSNR (full spectrum): {snr(selected_area):.2f}\n SNR (channel: {current_channel}): {snr(selected_area[current_channel]):.2f}',
                 transform=ax_intensity.transAxes,  # Use axes coordinates for positioning
                 fontsize=10,
                 verticalalignment='top',
@@ -216,7 +228,7 @@ def main():
     global colorbar_tl, colorbar_cb
     colorbar_tl, colorbar_cb = None, None
     # Create the plot
-    fig, (ax_tl, ax_cb, ax_intensity) = plt.subplots(1, 3, figsize=(18, 7))
+    fig, (ax_tl, ax_cb, ax_intensity) = plt.subplots(1, 3, figsize=(18, 6))
     plt.subplots_adjust(left=0.05, right=0.95, top=0.85, bottom=0.3, wspace=0.4)
 
     # Set window title
@@ -229,11 +241,11 @@ def main():
     update_cb_plot(current_cb_file, current_channel)
 
     # Sliders and textboxes for selecting images and channel
-    ax_tl_textbox = plt.axes([0.07, 0.15, 0.2, 0.05])  # Adjusted position and size
+    ax_tl_textbox = plt.axes([0.07, 0.12, 0.2, 0.05])  # Adjusted position and size
     tl_textbox = widgets.TextBox(ax_tl_textbox, 'Thorlabs File', initial=current_tl_file)
     tl_textbox.on_submit(change_thorlabs_file)
 
-    ax_cb_textbox = plt.axes([0.4, 0.15, 0.2, 0.05])  # Adjusted position and size
+    ax_cb_textbox = plt.axes([0.4, 0.12, 0.2, 0.05])  # Adjusted position and size
     cb_textbox = widgets.TextBox(ax_cb_textbox, 'Cubert File', initial=current_cb_file)
     cb_textbox.on_submit(change_cubert_file)
 
@@ -270,9 +282,13 @@ def main():
     )
     pol_slider.on_changed(change_pol)
 
-    ax_next_button = plt.axes([0.7, 0.15, 0.1, 0.05])
+    ax_next_button = plt.axes([0.85, 0.15, 0.1, 0.05])
     next_button = widgets.Button(ax_next_button, 'Next Image')
     next_button.on_clicked(next_image)
+
+    ax_prev_button = plt.axes([0.7, 0.15, 0.1, 0.05])
+    prev_button = widgets.Button(ax_prev_button, 'Previous Image')
+    prev_button.on_clicked(prev_image)
 
     # Display the plot
     plt.show()
