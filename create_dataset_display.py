@@ -22,7 +22,7 @@ display_y = 1080
 img_size_x = 426
 img_size_y = 240
 img_offset_x = 0
-img_offset_y = 250
+img_offset_y = 290
 
 exposure_time_tl = 1000 # in ms
 exposure_time_cb = 250 # in ms
@@ -166,7 +166,7 @@ def setup_cubert_cam():
 def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
     imaging_failed_counter = 0
     # Try taking and siving images until it works (max 5 times).
-    while imaging_failed_counter < 5:
+    while imaging_failed_counter < 15:
         # Take photo with Cubert cam
         print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
         am = acquContext.capture()
@@ -188,7 +188,7 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             # switch third (spectral) dimension to first dimension
             data_array = data_array.transpose(2,0,1)
             # crop cube
-            data_array = data_array[:, 190:232, 170:212]
+            data_array = data_array[:, 188+3:234-1, 64+3:110-1]
             # save as tif
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')

@@ -82,7 +82,7 @@ def toggle_selector(event):
         toggle_selector.RS.set_active(True)
 
 if __name__ == "__main__":
-    file_path = "images\\cubert\\3_cubert.tif"
+    file_path = "proof_of_concept\\images_cubert\\calib_test.tiff"
     tif = tifffile.imread(file_path)
     get_tiff_shape(tif) 
     display_first_channel(tif)
