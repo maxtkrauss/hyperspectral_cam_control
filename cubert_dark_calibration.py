@@ -30,8 +30,8 @@ def do_dark_calibration():
 
     # Parameters
     exposure = 250  # in ms
-    distance = 690  # in mm
-    n_calibration_frames = 10
+    distance = 690  # in ms
+    n_calibration_frames = 25
 
     # Start camera
     print("Loading user settings...")
