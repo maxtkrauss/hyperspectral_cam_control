@@ -13,8 +13,9 @@ thorlabs_files = sorted([f for f in os.listdir(thorlabs_image_folder) if f.endsw
 cubert_files = sorted([f for f in os.listdir(cubert_image_folder) if f.endswith(".tif")])
 
 # Initial selections
-current_tl_file = thorlabs_files[0]
-current_cb_file = cubert_files[0]
+current_img_index = 0
+current_tl_file = thorlabs_files[current_img_index%len(thorlabs_files)]
+current_cb_file = cubert_files[current_img_index%len(cubert_files)]
 current_channel = 53
 wavelengths = np.linspace(450, 850, 106)  # Assuming 106 channels from 450-850 nm
 
@@ -136,6 +137,18 @@ def change_pol(val):
     current_pol = int(val)
     update_tl_plot(current_tl_file, current_pol)
 
+# Show next image
+def next_image(_):
+    global cb_image, tl_image, current_img_index
+    current_img_index += 1
+    current_tl_file = thorlabs_files[current_img_index%len(thorlabs_files)]
+    current_cb_file = cubert_files[current_img_index%len(cubert_files)]
+    tl_image = load_tl_image(current_tl_file)
+    cb_image = load_cb_image(current_cb_file)
+    update_tl_plot(current_tl_file, current_pol)
+    update_cb_plot(current_cb_file, current_channel)
+    print(f"Showing next images: {current_tl_file} (TL), {current_cb_file} (CB)")
+
 # Calc SNR
 def snr(img, axis=None, ddof=0):
     img = np.asanyarray(img)
@@ -216,15 +229,15 @@ def main():
     update_cb_plot(current_cb_file, current_channel)
 
     # Sliders and textboxes for selecting images and channel
-    ax_tl_textbox = plt.axes([0.1, 0.15, 0.3, 0.05])  # Adjusted position and size
+    ax_tl_textbox = plt.axes([0.07, 0.15, 0.2, 0.05])  # Adjusted position and size
     tl_textbox = widgets.TextBox(ax_tl_textbox, 'Thorlabs File', initial=current_tl_file)
     tl_textbox.on_submit(change_thorlabs_file)
 
-    ax_cb_textbox = plt.axes([0.5, 0.15, 0.3, 0.05])  # Adjusted position and size
+    ax_cb_textbox = plt.axes([0.4, 0.15, 0.2, 0.05])  # Adjusted position and size
     cb_textbox = widgets.TextBox(ax_cb_textbox, 'Cubert File', initial=current_cb_file)
     cb_textbox.on_submit(change_cubert_file)
 
-    ax_channel_slider = plt.axes([0.55, 0.05, 0.35, 0.03])
+    ax_channel_slider = plt.axes([0.4, 0.05, 0.2, 0.03])
     channel_slider = widgets.Slider(
         ax=ax_channel_slider,
         label='Wavelength',
@@ -246,7 +259,7 @@ def main():
         interactive=True
     )
 
-    ax_pol_slider = plt.axes([0.1, 0.05, 0.1, 0.03])
+    ax_pol_slider = plt.axes([0.07, 0.05, 0.1, 0.03])
     pol_slider = widgets.Slider(
         ax=ax_pol_slider,
         label='Polarisation',
@@ -257,8 +270,9 @@ def main():
     )
     pol_slider.on_changed(change_pol)
 
-
-
+    ax_next_button = plt.axes([0.7, 0.15, 0.1, 0.05])
+    next_button = widgets.Button(ax_next_button, 'Next Image')
+    next_button.on_clicked(next_image)
 
     # Display the plot
     plt.show()
