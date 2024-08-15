@@ -50,11 +50,11 @@ def update_plot(tl_file, cb_file, channel):
     ax_cb.clear()
 
     # Plot Thorlabs image
-    im_tl = ax_tl.imshow(tl_image, cmap='viridis')
+    im_tl = ax_tl.imshow(tl_image[0], cmap='viridis')
     ax_tl.set_title(f"Thorlabs Image: {tl_file}")
 
     # Plot selected channel of Cubert image
-    im_cb = ax_cb.imshow(cb_image[:, :, channel], cmap='viridis')
+    im_cb = ax_cb.imshow(cb_image[channel, :, :], cmap='viridis')
     wavelength = wavelengths[channel]
     ax_cb.set_title(f"Cubert Image: {cb_file} (Channel {channel + 1}/{cb_image.shape[2]}, {wavelength:.1f} nm)")
 

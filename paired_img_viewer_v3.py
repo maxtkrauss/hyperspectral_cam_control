@@ -73,7 +73,7 @@ def update_tl_plot(tl_file, pol):
     pol_index = int(pol / 45)
     img = tl_image[pol_index]
     im_tl = ax_tl.imshow(img, cmap='viridis')
-    ax_tl.set_title(f"Thorlabs Image: {tl_file}")
+    ax_tl.set_title(f"Thorlabs Image: {tl_file} (P={pol})")
     ax_tl.annotate(f"Channel Stats: \nSNR: {snr(img):.2f}, Min: {np.min(img):.2f}, Max: {np.max(img):.2f}, Avg: {np.mean(img):.2f}, Std: {np.std(img):.2f}", 
                    (-0.05,-0.18), xycoords='axes fraction')
 
