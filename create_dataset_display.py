@@ -86,6 +86,7 @@ def main():
                 pygame.quit()
 
     print("\nDataset creation finished. Quitting.")
+    cam_tl.close()
     pygame.quit()
 
 

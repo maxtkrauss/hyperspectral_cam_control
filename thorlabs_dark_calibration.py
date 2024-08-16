@@ -26,6 +26,9 @@ def do_dark_calibration(exp_time = 1000, n_frames = 25, roi_tl = (0, 2448, 0, 20
     # saving
     np.save(f'images/calibration/thorlabs_dark/masterdark_tl_{exp_time}ms.npy', avg)
 
+    # close cam
+    cam.close()
+
 
 if __name__ == "__main__":
     do_dark_calibration()
