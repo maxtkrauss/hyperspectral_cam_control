@@ -6,7 +6,7 @@ from datetime import timedelta
 import cuvis
 import numpy as np
 
-def do_dark_calibration():
+def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 690):
 
     print("REMEMBER TO PUT THE CAP ON.")
 
@@ -29,9 +29,9 @@ def do_dark_calibration():
     recDir = os.path.join(os.getcwd(), "images", "calibration", "cubert_dark")
 
     # Parameters
-    exposure = 250  # in ms
-    distance = 690  # in ms
-    n_calibration_frames = 25
+    exposure = exp_time  # in ms
+    distance = dist  # in ms
+    n_calibration_frames = n_frames
 
     # Start camera
     print("Loading user settings...")
