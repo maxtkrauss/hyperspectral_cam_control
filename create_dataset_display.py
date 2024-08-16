@@ -170,8 +170,14 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
     while imaging_failed_counter < 15:
         # Take photo with Cubert cam
         print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
-        am = acquContext.capture()
-        mesu, res = am.get(timedelta(milliseconds=get_time_cb))
+        try:
+            am = acquContext.capture()
+            mesu, res = am.get(timedelta(milliseconds=get_time_cb))
+        except:
+            mesu = None
+            imaging_failed_counter += 1
+            print(f"CB imaging failed. Counter: {imaging_failed_counter}")
+
 
         # Save Cubert image
         if mesu is not None:

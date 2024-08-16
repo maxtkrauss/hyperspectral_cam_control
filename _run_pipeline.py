@@ -11,8 +11,8 @@ dist_cb = 690
 dataset_path = "images\\display\\dataset"
 
 # Calibration Routines
-calib_tl.do_dark_calibration(exp_time=exp_tl, n_frames=n_frames)
-calib_cb.do_dark_calibration(exp_time=exp_cb, n_frames=n_frames, dist=dist_cb)
+#calib_tl.do_dark_calibration(exp_time=exp_tl, n_frames=n_frames)
+#calib_cb.do_dark_calibration(exp_time=exp_cb, n_frames=n_frames, dist=dist_cb)
 
 # Wait for removal of Lens caps
 #input("Remove lens caps and press Enter.")
