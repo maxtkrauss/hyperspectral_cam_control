@@ -6,7 +6,7 @@
 - Slideshow with multiple sample images
 - rclone dataset to Google Drive
 - Looking into difference of dfa patterns when shifting spatially
-- Testing cross-correlation of different 
+- Testing cross-correlation of different polarisations
 - Cooling the Cubert cam
 - Testing the ML algorithm
 
