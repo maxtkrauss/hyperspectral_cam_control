@@ -8,7 +8,8 @@ import polanalyser as pa
 def main():
     # images
     img_folder = os.path.join('testing', 'dfa_imgs_dial8')
-    names = ['R','M','B','C','G','Y']
+    names = ['M','B','C','G','Y','R']
+    names_pol = ['0', '45', '90', '135']
 
     R = tifffile.imread(os.path.join(img_folder, 'R.tif'))
     M = tifffile.imread(os.path.join(img_folder, 'M.tif'))
@@ -17,7 +18,7 @@ def main():
     G = tifffile.imread(os.path.join(img_folder, 'G.tif'))
     Y = tifffile.imread(os.path.join(img_folder, 'Y.tif'))
 
-    imgs = np.array([R, M, B, C, G, Y])
+    imgs = np.array([M, B, C, G, Y, R])
     n = len(imgs)
 
     # polarisation demosaicing
@@ -54,43 +55,82 @@ def main():
     plt.imshow(img)
     plt.text(5,95,f'SNR: {snr(img)},\nMax: {np.max(img)},\nMin: {np.min(img)}', c='white')
 
-    # creating matrix with pearson coefficient
-    matrix = np.zeros((4, n, n))
+    # creating 4 color matrices with pearson coefficient
+    matrix_col = np.zeros((4, n, n))
 
     for pol in range(4):
         for i in range(n):
             for j in range(n):
                 a, _ = scipy.stats.pearsonr(imgs[i, pol], imgs[j, pol], axis=None)
-                matrix[pol, i, j] = a
+                matrix_col[pol, i, j] = a
 
 
-    # plotting correlation matrix
-    def plot(polar):
-        plt.imshow(matrix[polar])
+    # plotting correlation matrices of colors
+    def plot_corr_col(polar):
+        plt.imshow(matrix_col[polar])
 
         # adding colorbar
         plt.colorbar()
         
         # Adding labels to the matrix
-        plt.xticks(range(len(matrix[polar])), names, rotation=45, ha='right')
-        plt.yticks(range(len(matrix[polar])), names)
+        plt.xticks(range(len(matrix_col[polar])), names, rotation=45, ha='right')
+        plt.yticks(range(len(matrix_col[polar])), names)
 
     plt.figure(figsize=(8,8))
     plt.suptitle('Pearson Correlation Coefficient for DFA structures of different colors')
     plt.subplot(221)
     plt.title('P=0')
-    plot(0)
+    plot_corr_col(0)
     plt.subplot(222)
     plt.title('P=45')
-    plot(1)
+    plot_corr_col(1)
     plt.subplot(223)
     plt.title('P=90')
-    plot(2)
+    plot_corr_col(2)
     plt.subplot(224)
     plt.title('P=135')
-    plot(3)
+    plot_corr_col(3)
 
-    # Display the plot
+    # creating n polarisation matrices with pearson coefficient
+    matrix_pol = np.zeros((n, 4, 4))
+
+    for i in range(n):
+        for pol_i in range(4):
+            for pol_j in range(4):
+                a, _ = scipy.stats.pearsonr(imgs[i, pol_i], imgs[i, pol_j], axis=None)
+                matrix_pol[i, pol_i, pol_j] = a
+
+    # plotting correlation matrices of polarisation
+    def plot_corr_pol(col):
+        plt.imshow(matrix_pol[col])
+        # adding colorbar
+        plt.colorbar()
+        # Adding labels to the matrix
+        plt.xticks(range(len(matrix_pol[col])), names_pol, rotation=45, ha='right')
+        plt.yticks(range(len(matrix_pol[col])), names_pol)
+
+    plt.figure(figsize=(8,8))
+    plt.suptitle('Pearson Correlation Coefficient for DFA structures of different polarisations')
+    plt.subplot(321)
+    plt.title('M')
+    plot_corr_pol(0)
+    plt.subplot(322)
+    plt.title('B')
+    plot_corr_pol(1)
+    plt.subplot(323)
+    plt.title('C')
+    plot_corr_pol(2)
+    plt.subplot(324)
+    plt.title('G')
+    plot_corr_pol(3)
+    plt.subplot(325)
+    plt.title('Y')
+    plot_corr_pol(4)
+    plt.subplot(326)
+    plt.title('R')
+    plot_corr_pol(5)
+
+    # show
     plt.show()
 
 ## calc SNR
