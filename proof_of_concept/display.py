@@ -2,7 +2,7 @@ import pygame
 import os
 
 # Parameters
-display_image_folder = 'C:\\Users\\maxtk\\Documents\\MenonLab\\Intel_Dataset\\test'
+display_image_folder = 'images\\display\\dataset'
 
 display_x = 1920
 display_y = 1080
