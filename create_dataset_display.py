@@ -166,6 +166,7 @@ def setup_cubert_cam():
 ## take cubert image, extract raw data, do dark calibration and save that as a tiff
 def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
     imaging_failed_counter = 0
+    saved = False
     # Try taking and siving images until it works (max 5 times).
     while imaging_failed_counter < 15:
         # Take photo with Cubert cam
@@ -200,11 +201,20 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
             print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
+            saved = True
             # end while loop
             break
         else:   
             imaging_failed_counter += 1
             print(f"CB image saving failed. Counter: {imaging_failed_counter}")
+    if saved == False:
+        # delete TL image
+        try: 
+            os.remove(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
+            print("Deleted corresponding TL image because CB image saving failed.")
+        except:
+            print("TL image could not be deleted.")
+        
 
 ## setup pygame and load images for the display
 def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
