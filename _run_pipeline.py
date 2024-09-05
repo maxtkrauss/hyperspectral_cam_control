@@ -1,7 +1,8 @@
 import cubert_dark_calibration as calib_cb
 import thorlabs_dark_calibration as calib_tl
 import create_dataset_display as create
-#import paired_img_viewer_v3 as view
+import paired_img_viewer_v3 as view
+import os
 
 # Parameter
 exp_tl = 1000
@@ -9,6 +10,7 @@ exp_cb = 500
 n_frames = 10
 dist_cb = 680
 dataset_path = "images\\display\\dataset"
+save_path = "images\\display"
 
 # Calibration Routines
 #calib_tl.do_dark_calibration(exp_time=exp_tl, n_frames=n_frames)
@@ -21,6 +23,8 @@ dataset_path = "images\\display\\dataset"
 create.exposure_time_tl = exp_tl
 create.exposure_time_cb = exp_cb
 create.display_image_folder = dataset_path
+create.thorlabs_image_folder = os.path.join(save_path, 'thorlabs')
+create.cubert_image_folder = os.path.join(save_path, 'cubert')
 create.main()
 
 # Open Paired Image Viewer
