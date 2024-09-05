@@ -38,6 +38,9 @@ path_dark_cb = f"images//calibration//cubert_dark//masterdark_cb_{exposure_time_
 distance_cb = 640 # in mm
 get_time_cb = 1000 # in ms
 
+# Cropping
+crop_tl = ((550-50, 1350+50), (850-50, 1650+50))
+crop_cb = ((188+3, 234-1), (64+3, 110-1))
 
 ## Main function
 def main():
@@ -109,9 +112,10 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
 
     # Demonsaicing to different polarization channels
     img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
+    img_tl_pol.append(img_tl)
 
     # Crop to size of DFA
-    img_tl_pol = img_tl_pol[:, 550-50:1350+50, 850-50:1650+50]
+    img_tl_pol = img_tl_pol[:, crop_tl[0,0]:crop_tl[0,1], crop_tl[1,0]:crop_tl[1,1]]
 
     # Save Thorlabs image
     path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
@@ -195,7 +199,7 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             # switch third (spectral) dimension to first dimension
             data_array = data_array.transpose(2,0,1)
             # crop cube
-            data_array = data_array[:, 188+3:234-1, 64+3:110-1]
+            data_array = data_array[:, crop_cb[0,0]:crop_cb[0,1], crop_cb[1,0]:crop_cb[1,1]]
             # save as tif
             path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
             tifffile.imwrite(path, data_array,  photometric='minisblack')
