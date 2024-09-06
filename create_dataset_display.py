@@ -19,10 +19,10 @@ cubert_image_folder = 'images/cubert'
 
 display_x = 1920
 display_y = 1080
-img_size_x = 426
-img_size_y = 240
+img_size_x = 426*2.5
+img_size_y = 240*2.5
 img_offset_x = 0
-img_offset_y = 290
+img_offset_y = 180
 
 exposure_time_tl = 1000 # in ms
 exposure_time_cb = 250 # in ms
@@ -39,8 +39,8 @@ distance_cb = 640 # in mm
 get_time_cb = 1000 # in ms
 
 # Cropping
-crop_tl = ((550-50, 1350+50), (850-50, 1650+50))
-crop_cb = ((188+3, 234-1), (64+3, 110-1))
+crop_tl = ((1200-350-100, 1200+350+100), (400-100, 1100+100)) #((550-50, 1350+50), (850-50, 1650+50))
+crop_cb = ((50-11, 150-7), (150-17, 250-13)) #((188+3, 234-1), (64+3, 110-1))
 
 ## Main function
 def main():
@@ -111,11 +111,14 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
     print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
 
     # Demonsaicing to different polarization channels
+    print(img_tl.shape)
     img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
-    img_tl_pol.append(img_tl)
+    print("shape", img_tl_pol.shape)
+    img_tl_pol = np.append(img_tl_pol, [img_tl], axis=0)
+    print("shape", img_tl_pol.shape)
 
     # Crop to size of DFA
-    img_tl_pol = img_tl_pol[:, crop_tl[0,0]:crop_tl[0,1], crop_tl[1,0]:crop_tl[1,1]]
+    img_tl_pol = img_tl_pol[:, crop_tl[1][0]:crop_tl[1][1], crop_tl[0][0]:crop_tl[0][1]]
 
     # Save Thorlabs image
     path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
@@ -200,14 +203,18 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             # switch third (spectral) dimension to first dimension
             data_array = data_array.transpose(2,0,1)
             # crop cube
-            data_array = data_array[:, crop_cb[0,0]:crop_cb[0,1], crop_cb[1,0]:crop_cb[1,1]]
-            # save as tif
-            path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
-            tifffile.imwrite(path, data_array,  photometric='minisblack')
-            print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
-            saved = True
-            # end while loop
-            break
+            data_array = data_array[:, crop_cb[1][0]:crop_cb[1][1], crop_cb[0][0]:crop_cb[0][1]]
+            if snr(data_array) > 0.1:
+                # save as tif
+                path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
+                tifffile.imwrite(path, data_array,  photometric='minisblack')
+                print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
+                saved = True
+                # end while loop
+                break
+            else:
+                imaging_failed_counter += 1
+                print(f"CB image saving failed. Counter: {imaging_failed_counter}")
         else:   
             imaging_failed_counter += 1
             print(f"CB image saving failed. Counter: {imaging_failed_counter}")
