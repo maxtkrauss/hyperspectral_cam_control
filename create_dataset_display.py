@@ -247,7 +247,7 @@ def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
 
     # Load images
     images = []
-    filenames = [f for f in os.listdir(img_path) if f.endswith('.jpg') | f.endswith('.png')]
+    filenames = sorted([f for f in os.listdir(img_path) if f.endswith('.jpg') | f.endswith('.png')], reverse=True)
     print("Filenames:", filenames)
     for name in filenames:
         img = pygame.image.load(os.path.join(img_path, name))
