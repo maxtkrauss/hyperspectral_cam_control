@@ -74,10 +74,13 @@ def main():
         img_name = display_image(img_disp=img_disp, scrn=scrn)
 
         # Taking and saving photo with Thorlabs cam
-        take_and_save_thorlabs_image(img_name=img_name, dark_cal=dark_calibration_tl, cam_tl=cam_tl)
+        tl_success, cam_tl = take_and_save_thorlabs_image(img_name=img_name, dark_cal=dark_calibration_tl, cam_tl=cam_tl)
 
         # Taking and saving photo with Cubert cam
-        take_and_save_cubert_image(img_name=img_name, dark_cal=dark_calibration_cb, acquContext=acquisitionContext, procContext=processingContext)
+        if tl_success:
+            take_and_save_cubert_image(img_name=img_name, dark_cal=dark_calibration_cb, acquContext=acquisitionContext, procContext=processingContext)
+        else:
+            print("Skipping CB image because TL imaging was unsuccessful.")
 
         # wait half a second
         pygame.time.wait(500)
@@ -103,27 +106,44 @@ def setup_thorlabs_cam():
 
 ## take cubert image as array, do dark calibration and save that as a tiff
 def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
-    if do_dark_subtract_tl:
-        img_tl = cam_tl.snap() - dark_cal
-        img_tl = np.maximum(img_tl, 0)
+    imaging_failed_counter = 0
+    success = False
+
+    # Try taking and saving images until it works (max 15 times).
+    while imaging_failed_counter < 15:
+        print(f"Taking {exposure_time_tl}ms exposure with TL cam...")
+        try:
+            if do_dark_subtract_tl:
+                img_tl = cam_tl.snap() - dark_cal
+                img_tl = np.maximum(img_tl, 0)
+            else:
+                img_tl = cam_tl.snap()
+            print("TL imaging successfull.")
+            success = True
+            break
+        except:
+            imaging_failed_counter += 1
+            print(f"Thorlabs imaging failed. Restarting cam. Counter {imaging_failed_counter}")
+            cam_tl.close()
+            cam_tl = setup_thorlabs_cam()
+
+    if success:
+        # Demonsaicing to different polarization channels
+        img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
+        img_tl_pol = np.append(img_tl_pol, [img_tl], axis=0)
+
+        # Crop to size of DFA
+        img_tl_pol = img_tl_pol[:, crop_tl[1][0]:crop_tl[1][1], crop_tl[0][0]:crop_tl[0][1]]
+
+        # Save Thorlabs image
+        path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
+        tifffile.imwrite(path, img_tl_pol,  photometric='minisblack')
+        print(f"Saved TL image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
     else:
-        img_tl = cam_tl.snap()
-    print(f"Taking {exposure_time_tl}ms exposure with TL cam.")
+        print("No TL image to save.")
 
-    # Demonsaicing to different polarization channels
-    print(img_tl.shape)
-    img_tl_pol = pa.demosaicing(img_raw=img_tl, code=pa.COLOR_PolarMono)
-    print("shape", img_tl_pol.shape)
-    img_tl_pol = np.append(img_tl_pol, [img_tl], axis=0)
-    print("shape", img_tl_pol.shape)
-
-    # Crop to size of DFA
-    img_tl_pol = img_tl_pol[:, crop_tl[1][0]:crop_tl[1][1], crop_tl[0][0]:crop_tl[0][1]]
-
-    # Save Thorlabs image
-    path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
-    tifffile.imwrite(path, img_tl_pol,  photometric='minisblack')
-    print(f"Saved TL image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
+    # Returnign cam_tl in case the camera had to be restarted
+    return success, cam_tl
 
 ## setup everything for the Thorlabs camera
 def setup_cubert_cam():
@@ -247,7 +267,7 @@ def setup_pygame_display(X, Y, img_size_x, img_size_y, img_path):
 
     # Load images
     images = []
-    filenames = sorted([f for f in os.listdir(img_path) if f.endswith('.jpg') | f.endswith('.png')], reverse=True)
+    filenames = sorted([f for f in os.listdir(img_path) if f.endswith('.jpg') | f.endswith('.png')], reverse=False)
     print("Filenames:", filenames)
     for name in filenames:
         img = pygame.image.load(os.path.join(img_path, name))
