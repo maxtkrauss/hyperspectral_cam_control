@@ -6,10 +6,10 @@ display_image_folder = 'images\\display\\dataset'
 
 display_x = 1920
 display_y = 1080
-img_size_x = 426
-img_size_y = 240
+img_size_x = 426*2
+img_size_y = 240*2
 img_offset_x = 0
-img_offset_y = 270
+img_offset_y = 180
 
 def main():
     # Set up the pygame display
