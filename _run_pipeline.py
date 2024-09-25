@@ -10,7 +10,7 @@ exp_cb = 500
 n_frames = 10
 dist_cb = 800
 dataset_path = "images\\display\\dataset"
-save_path = "B:\\nasa_hsi_dataset\\frosted_plastic_2024-09-10_4"
+save_path = "B:\\nasa_hsi_dataset\\frosted_plastic_2024-09-18_slipped"
 try:
     os.mkdir(save_path)
     os.mkdir(os.path.join(save_path, 'thorlabs'))
