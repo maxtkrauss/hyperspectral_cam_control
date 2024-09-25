@@ -12,16 +12,9 @@ import numpy as np
 import polanalyser as pa
 
 ## Parameters
-display_image_folder = 'images/display'
 thorlabs_image_folder = 'images/thorlabs'
 cubert_image_folder = 'images/cubert'
 
-display_x = 1920
-display_y = 1080
-img_size_x = 426*2.5
-img_size_y = 240*2.5
-img_offset_x = 0
-img_offset_y = 180
 
 exposure_time_tl = 1000 # in ms
 exposure_time_cb = 250 # in ms
