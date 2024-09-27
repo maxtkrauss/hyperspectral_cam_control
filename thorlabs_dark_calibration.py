@@ -4,7 +4,7 @@ from pylablib.devices import Thorlabs as tl
 import numpy as np
 import matplotlib.pyplot as plt
 
-def do_dark_calibration(exp_time = 1000, n_frames = 25, roi_tl = (0, 2448, 0, 2048)):
+def do_dark_calibration(exp_time = 10, n_frames = 25, roi_tl = (0, 2448, 0, 2048)):
     print("REMEMBER TO PUT THE CAP ON.")
 
     # connecting cam

@@ -6,7 +6,7 @@ from datetime import timedelta
 import cuvis
 import numpy as np
 
-def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 690):
+def do_dark_calibration(exp_time = 16, n_frames = 10, dist = 6000):
 
     print("REMEMBER TO PUT THE CAP ON.")
 
