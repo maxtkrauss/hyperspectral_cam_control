@@ -1,3 +1,4 @@
+
 from pylablib.devices import Thorlabs as tl
 import cuvis
 
@@ -10,13 +11,16 @@ from threading import Thread
 import tifffile
 import numpy as np
 import polanalyser as pa
+import pygame
+import create_dataset_display as display
+
 
 ## Parameters
-thorlabs_image_folder = 'images/thorlabs'
-cubert_image_folder = 'images/cubert'
+thorlabs_image_folder = 'D:/NASA_HSI/Lab_Test_10_2_24/thorlabs'
+cubert_image_folder = 'D:/NASA_HSI/Lab_Test_10_2_24/cubert'
+display_image_folder = 'images/display'
 
-
-exposure_time_tl = 1000 # in ms
+exposure_time_tl = 500 # in ms
 exposure_time_cb = 250 # in ms
 
 # Additional paramters for Thorlabs cam
@@ -27,15 +31,24 @@ roi_tl = (0, 2448, 0, 2048)
 # Additional paramters for Cubert cam
 do_dark_subtract_cb = True
 path_dark_cb = f"images//calibration//cubert_dark//masterdark_cb_{exposure_time_cb}ms.npy"
-distance_cb = 640 # in mm
-get_time_cb = 1000 # in ms
+distance_cb = 800 # in mm
+get_time_cb = 250 # in ms
 
 # Cropping
-crop_tl = ((1200-350-100, 1200+350+100), (400-100, 1100+100)) #((550-50, 1350+50), (850-50, 1650+50))
-crop_cb = ((50-11, 150-7), (150-17, 250-13)) #((188+3, 234-1), (64+3, 110-1))
+crop_tl = ((610, 1610), (291, 1291))  #((550-50, 1350+50), (850-50, 1650+50))
+crop_cb = ((2, 122), (128, 248)) #((188+3, 234-1), (64+3, 110-1))
+
+# Display Functionality: 
+display_x = 1920
+display_y = 1080
+img_size_x = 426*2.5
+img_size_y = 240*2.5
+img_offset_x = 0
+img_offset_y = 180
 
 ## Main function
 def main():
+    live_bool = True
     # Setup the Thorlabs cam
     cam_tl = setup_thorlabs_cam()
     print("TL: Setup done.")
@@ -52,22 +65,27 @@ def main():
     if do_dark_subtract_cb:
         dark_calibration_cb = np.load(path_dark_cb)
 
+    # Set up the pygame display and images
+    scrn, images_disp = display.setup_pygame_display(display_x, display_y, img_size_x, img_size_y, display_image_folder)
+    print("Pygame setup done.")
+    pygame.time.wait(1000)
+
     # Loop over all loaded display images
-    img_name = "0"
-    while True:
-        img_name = str(int(img_name) + 1)
+    img_name = 0
+    while live_bool:
+        img_name = img_name + 1
 
         inp = input("\nReady to take an image. Press Enter or type \"end\".")
         if inp == "end":
             break
 
         # Taking and saving photo with Thorlabs cam
-        tl_thread = Thread(target=take_and_save_thorlabs_image, args=(img_name, dark_calibration_tl, cam_tl))
+        tl_thread = Thread(target=take_and_save_thorlabs_image, args=(str(img_name), dark_calibration_tl, cam_tl))
         tl_thread.start()
 
         # Taking and saving photo with Cubert cam
-        cb_thread = Thread(target=take_and_save_cubert_image, args=(img_name, dark_calibration_cb, acquisitionContext, processingContext))
-        tl_thread.start()
+        cb_thread = Thread(target=take_and_save_cubert_image, args=(str(img_name), dark_calibration_cb, acquisitionContext, processingContext))
+        cb_thread.start()
 
         # Waiting for both threads to finish
         tl_thread.join()
@@ -76,6 +94,34 @@ def main():
     print("\nDataset creation finished. Quitting.")
     cam_tl.close()
 
+    if live_bool == False:
+
+        for img_disp in images_disp:
+            # Display image
+            img_name = display.display_image(img_disp=img_disp, scrn=scrn)
+
+            # Taking and saving photo with Thorlabs cam
+            tl_thread = Thread(target=take_and_save_thorlabs_image, args=(str(img_name), dark_calibration_tl, cam_tl))
+            tl_thread.start()
+
+            # Taking and saving photo with Cubert cam
+            cb_thread = Thread(target=take_and_save_cubert_image, args=(str(img_name), dark_calibration_cb, acquisitionContext, processingContext))
+            cb_thread.start()
+
+            # Waiting for both threads to finish
+            tl_thread.join()
+            cb_thread.join()
+
+            # test if pygame should stop
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT or e.type == pygame.KEYDOWN:
+                    live_bool = True
+                    print("Quitting.")
+                    pygame.quit()
+
+    print("\nDataset creation finished. Quitting.")
+    cam_tl.close()
+    pygame.quit()
 
 ## setup everything for the Thorlabs camera
 def setup_thorlabs_cam():
@@ -117,7 +163,7 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
         img_tl_pol = img_tl_pol[:, crop_tl[1][0]:crop_tl[1][1], crop_tl[0][0]:crop_tl[0][1]]
 
         # Save Thorlabs image
-        path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
+        path = os.path.join(thorlabs_image_folder, img_name + "_thorlabs.tif")
         tifffile.imwrite(path, img_tl_pol,  photometric='minisblack')
         print(f"TL: Saved image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
     else:
@@ -175,7 +221,7 @@ def setup_cubert_cam():
 def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
     imaging_failed_counter = 0
     saved = False
-    # Try taking and siving images until it works (max 5 times).
+    # Try taking and saving images until it works (max 5 times).
     while imaging_failed_counter < 15:
         # Take photo with Cubert cam
         print(f"CB: Taking {exposure_time_cb}ms exposure with CB cam...")
@@ -190,7 +236,7 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
 
         # Save Cubert image
         if mesu is not None:
-            mesu.set_name(img_name[:-4] + "_cubert")
+            mesu.set_name(img_name + "_cubert")
             procContext.apply(mesu)
             print("CB: Exporting image to multi-channel .tif...")
             # get array from mesurement
@@ -207,7 +253,7 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             data_array = data_array[:, crop_cb[1][0]:crop_cb[1][1], crop_cb[0][0]:crop_cb[0][1]]
             if snr(data_array) > 0.1:
                 # save as tif
-                path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
+                path = os.path.join(cubert_image_folder, img_name + "_cubert.tif")
                 tifffile.imwrite(path, data_array,  photometric='minisblack')
                 print(f"CB: Saved image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
                 saved = True
@@ -223,7 +269,8 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
         # delete TL image
         print("CB: Deleting corresponding TL image because CB image saving failed...")
         try: 
-            os.remove(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
+            os.remove(os.path.join(thorlabs_image_folder, 
+             + "_thorlabs.tif"))
             print("CB: Deleted corresponding TL image.")
         except:
             print("CB: TL image could not be deleted.")

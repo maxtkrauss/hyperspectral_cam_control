@@ -6,7 +6,7 @@ from datetime import timedelta
 import cuvis
 import numpy as np
 
-def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 690):
+def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 800):
 
     print("REMEMBER TO PUT THE CAP ON.")
 
@@ -61,10 +61,17 @@ def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 690):
 
     # Take pictures
     i = 0
+    imaging_failed_counter = 0
     while i < n_calibration_frames:
         print(f"Image recording... {i}")
-        am = acquisitionContext.capture()
-        m, r = am.get(timedelta(milliseconds=1000))
+        try:
+            am = acquisitionContext.capture()
+            m, r = am.get(timedelta(milliseconds=1000))
+        except:
+            m = None
+            imaging_failed_counter += 1
+            print(f"CB: imaging failed. Counter: {imaging_failed_counter}")
+
         if m is not None:
             processingContext.apply(m)
             data_arrays.append(np.array(m.data['cube'].array))

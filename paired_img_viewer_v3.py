@@ -5,8 +5,8 @@ import os
 from matplotlib import widgets
 
 # Folder paths for images
-thorlabs_image_folder = 'images/thorlabs'
-cubert_image_folder = 'images/cubert'
+thorlabs_image_folder = 'D:/NASA_HSI/Lab_Test_10_4_24/thorlabs'
+cubert_image_folder = 'D:/NASA_HSI/Lab_Test_10_4_24/cubert'
 
 # List available files in each folder
 thorlabs_files = sorted([f for f in os.listdir(thorlabs_image_folder) if f.endswith(".tif")])
@@ -215,7 +215,7 @@ def onselect(eclick, erelease):
 
     ax_intensity.set_xlabel("Wavelength (nm)")
     ax_intensity.set_ylabel("Intensity")
-    ax_intensity.set_title("Spectrum for Selected Areas")
+    ax_intensity.set_title("Spectrum for Cubert Image")
     ax_intensity.legend()
 
     # Redraw the figure

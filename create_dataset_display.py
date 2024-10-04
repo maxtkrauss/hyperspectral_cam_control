@@ -25,7 +25,7 @@ img_offset_x = 0
 img_offset_y = 180
 
 exposure_time_tl = 1000 # in ms
-exposure_time_cb = 250 # in ms
+exposure_time_cb = 500 # in ms
 
 # Additional paramters for Thorlabs cam
 do_dark_subtract_tl = True
@@ -35,12 +35,12 @@ roi_tl = (0, 2448, 0, 2048)
 # Additional paramters for Cubert cam
 do_dark_subtract_cb = True
 path_dark_cb = f"images//calibration//cubert_dark//masterdark_cb_{exposure_time_cb}ms.npy"
-distance_cb = 640 # in mm
-get_time_cb = 1000 # in ms
 
-# Cropping
-crop_tl = ((1200-350-100, 1200+350+100), (400-100, 1100+100)) #((550-50, 1350+50), (850-50, 1650+50))
-crop_cb = ((50-11, 150-7), (150-17, 250-13)) #((188+3, 234-1), (64+3, 110-1))
+distance_cb = 800 # in mm
+
+# Cropping parameters
+crop_tl = ((610, 1610), (291, 1291))  #((550-50, 1350+50), (850-50, 1650+50))
+crop_cb = ((2, 122), (128, 248)) #((188+3, 234-1), (64+3, 110-1))
 
 ## Main function
 def main():
@@ -82,8 +82,8 @@ def main():
         else:
             print("Skipping CB image because TL imaging was unsuccessful.")
 
-        # wait half a second
-        pygame.time.wait(500)
+        # wait a second
+        pygame.time.wait(1000)
 
         # test if pygame should stop
         for e in pygame.event.get():
@@ -96,6 +96,7 @@ def main():
     pygame.quit()
 
 
+## setup everything for the Thorlabs camera
 ## setup everything for the Thorlabs camera
 def setup_thorlabs_cam():
     tl.list_cameras_tlcam()
@@ -111,19 +112,19 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
 
     # Try taking and saving images until it works (max 15 times).
     while imaging_failed_counter < 15:
-        print(f"Taking {exposure_time_tl}ms exposure with TL cam...")
+        print(f"TL: Taking {exposure_time_tl}ms exposure with TL cam...")
         try:
             if do_dark_subtract_tl:
                 img_tl = cam_tl.snap() - dark_cal
                 img_tl = np.maximum(img_tl, 0)
             else:
                 img_tl = cam_tl.snap()
-            print("TL imaging successfull.")
+            print("TL: Imaging successfull.")
             success = True
             break
         except:
             imaging_failed_counter += 1
-            print(f"Thorlabs imaging failed. Restarting cam. Counter {imaging_failed_counter}")
+            print(f"TL: Imaging failed. Restarting cam. Counter {imaging_failed_counter}")
             cam_tl.close()
             cam_tl = setup_thorlabs_cam()
 
@@ -136,11 +137,11 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
         img_tl_pol = img_tl_pol[:, crop_tl[1][0]:crop_tl[1][1], crop_tl[0][0]:crop_tl[0][1]]
 
         # Save Thorlabs image
-        path = os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif")
+        path = os.path.join(thorlabs_image_folder, img_name + "_thorlabs.tif")
         tifffile.imwrite(path, img_tl_pol,  photometric='minisblack')
-        print(f"Saved TL image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
+        print(f"TL: Saved image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
     else:
-        print("No TL image to save.")
+        print("TL: No image to save.")
 
     # Returnign cam_tl in case the camera had to be restarted
     return success, cam_tl
@@ -194,24 +195,25 @@ def setup_cubert_cam():
 def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
     imaging_failed_counter = 0
     saved = False
-    # Try taking and siving images until it works (max 5 times).
+    # Try taking and saving images until it works (max 5 times).
     while imaging_failed_counter < 15:
+        time.sleep(0.5)
         # Take photo with Cubert cam
-        print(f"Taking {exposure_time_cb}ms exposure with CB cam...")
+        print(f"CB: Taking {exposure_time_cb}ms exposure with CB cam...")
         try:
             am = acquContext.capture()
-            mesu, res = am.get(timedelta(milliseconds=get_time_cb))
+            mesu, res = am.get(timedelta(milliseconds=1000))
         except:
             mesu = None
             imaging_failed_counter += 1
-            print(f"CB imaging failed. Counter: {imaging_failed_counter}")
+            print(f"CB: imaging failed. Counter: {imaging_failed_counter}")
 
 
         # Save Cubert image
         if mesu is not None:
-            mesu.set_name(img_name[:-4] + "_cubert")
+            mesu.set_name(img_name + "_cubert")
             procContext.apply(mesu)
-            print("Export CB image to multi-channel .tif...")
+            print("CB: Exporting image to multi-channel .tif...")
             # get array from mesurement
             data_array = np.array(mesu.data['cube'].array)
             # dark subtraction
@@ -224,27 +226,29 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             data_array = data_array.transpose(2,0,1)
             # crop cube
             data_array = data_array[:, crop_cb[1][0]:crop_cb[1][1], crop_cb[0][0]:crop_cb[0][1]]
-            if snr(data_array) > 0.1:
+            if snr(data_array) > 0.05:
                 # save as tif
-                path = os.path.join(cubert_image_folder, img_name[:-4] + "_cubert.tif")
+                path = os.path.join(cubert_image_folder, img_name + "_cubert.tif")
                 tifffile.imwrite(path, data_array,  photometric='minisblack')
-                print(f"Saved CB image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
+                print(f"CB: Saved image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
                 saved = True
                 # end while loop
                 break
             else:
                 imaging_failed_counter += 1
-                print(f"CB image saving failed. Counter: {imaging_failed_counter}")
+                print(f"CB: Image saving failed. Counter: {imaging_failed_counter}")
         else:   
             imaging_failed_counter += 1
-            print(f"CB image saving failed. Counter: {imaging_failed_counter}")
+            print(f"CB: Image saving failed. Counter: {imaging_failed_counter}")
     if saved == False:
         # delete TL image
+        print("CB: Deleting corresponding TL image because CB image saving failed...")
         try: 
-            os.remove(os.path.join(thorlabs_image_folder, img_name[:-4] + "_thorlabs.tif"))
-            print("Deleted corresponding TL image because CB image saving failed.")
+            os.remove(os.path.join(thorlabs_image_folder, 
+             + "_thorlabs.tif"))
+            print("CB: Deleted corresponding TL image.")
         except:
-            print("TL image could not be deleted.")
+            print("CB: TL image could not be deleted.")
         
 
 ## setup pygame and load images for the display
