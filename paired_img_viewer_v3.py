@@ -216,6 +216,7 @@ def onselect(eclick, erelease):
     ax_intensity.set_xlabel("Wavelength (nm)")
     ax_intensity.set_ylabel("Intensity")
     ax_intensity.set_title("Spectrum for Cubert Image")
+    ax_intensity.set_title("Spectrum for Cubert Image")
     ax_intensity.legend()
 
     # Redraw the figure

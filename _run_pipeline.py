@@ -9,8 +9,9 @@ exp_tl = 500
 exp_cb = 250
 n_frames = 10
 dist_cb = 800
-dataset_path = "D:\\NASA_HSI\\display_data_wonders"
-save_path = "D:\\NASA_HSI\\Lab_Test_10_4_24"
+manual = False
+# dataset_path = "images\\display\\dataset"
+save_path = "B:\\nasa_hsi_dataset\\frosted_plastic_2024-09-18_slipped"
 try:
     os.mkdir(save_path)
     os.mkdir(os.path.join(save_path, 'thorlabs'))
@@ -30,6 +31,7 @@ create.exposure_time_tl = exp_tl
 create.exposure_time_cb = exp_cb
 create.distance_cb = dist_cb
 # create.display_image_folder = dataset_path
+create.manual_imaging = manual
 create.thorlabs_image_folder = os.path.join(save_path, 'thorlabs')
 create.cubert_image_folder = os.path.join(save_path, 'cubert')
 create.display_image_folder = dataset_path

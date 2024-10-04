@@ -75,15 +75,23 @@ def main():
     while live_bool:
         img_name = img_name + 1
 
-        inp = input("\nReady to take an image. Press Enter or type \"end\".")
-        if inp == "end":
-            break
+        if manual_imaging:
+            inp = input("\nReady to take an image. Press Enter or type \"end\".")
+            if inp == "end":
+                break
+        else:
+            time.sleep(0    
+                        )  # import time
+            print(f"\nImage count: {img_name}")
 
         # Taking and saving photo with Thorlabs cam
+        tl_thread = Thread(target=take_and_save_thorlabs_image, args=(str(img_name), dark_calibration_tl, cam_tl))
         tl_thread = Thread(target=take_and_save_thorlabs_image, args=(str(img_name), dark_calibration_tl, cam_tl))
         tl_thread.start()
 
         # Taking and saving photo with Cubert cam
+        cb_thread = Thread(target=take_and_save_cubert_image, args=(str(img_name), dark_calibration_cb, acquisitionContext, processingContext))
+        cb_thread.start()
         cb_thread = Thread(target=take_and_save_cubert_image, args=(str(img_name), dark_calibration_cb, acquisitionContext, processingContext))
         cb_thread.start()
 
@@ -160,9 +168,10 @@ def take_and_save_thorlabs_image(img_name, dark_cal, cam_tl):
         img_tl_pol = np.append(img_tl_pol, [img_tl], axis=0)
 
         # Crop to size of DFA
-        img_tl_pol = img_tl_pol[:, crop_tl[1][0]:crop_tl[1][1], crop_tl[0][0]:crop_tl[0][1]]
+        # img_tl_pol = img_tl_pol[:, crop_tl[1][0]:crop_tl[1][1], crop_tl[0][0]:crop_tl[0][1]]
 
         # Save Thorlabs image
+        path = os.path.join(thorlabs_image_folder, img_name + "_thorlabs.tif")
         path = os.path.join(thorlabs_image_folder, img_name + "_thorlabs.tif")
         tifffile.imwrite(path, img_tl_pol,  photometric='minisblack')
         print(f"TL: Saved image as tiff. (Shape: {img_tl_pol.shape}, Max: {np.max(img_tl_pol)}, Min: {np.min(img_tl_pol)}, Avg: {np.average(img_tl_pol)}, SNR: {snr(img_tl_pol)})")
@@ -228,14 +237,15 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
         try:
             am = acquContext.capture()
             mesu, res = am.get(timedelta(milliseconds=get_time_cb))
+            print("CB: Imaging successfull.")
         except:
             mesu = None
             imaging_failed_counter += 1
             print(f"CB: imaging failed. Counter: {imaging_failed_counter}")
 
-
         # Save Cubert image
         if mesu is not None:
+            mesu.set_name(img_name + "_cubert")
             mesu.set_name(img_name + "_cubert")
             procContext.apply(mesu)
             print("CB: Exporting image to multi-channel .tif...")
@@ -250,9 +260,10 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
             # switch third (spectral) dimension to first dimension
             data_array = data_array.transpose(2,0,1)
             # crop cube
-            data_array = data_array[:, crop_cb[1][0]:crop_cb[1][1], crop_cb[0][0]:crop_cb[0][1]]
+            # data_array = data_array[:, crop_cb[1][0]:crop_cb[1][1], crop_cb[0][0]:crop_cb[0][1]]
             if snr(data_array) > 0.1:
                 # save as tif
+                path = os.path.join(cubert_image_folder, img_name + "_cubert.tif")
                 path = os.path.join(cubert_image_folder, img_name + "_cubert.tif")
                 tifffile.imwrite(path, data_array,  photometric='minisblack')
                 print(f"CB: Saved image as tiff. (Shape: {data_array.shape}, Max: {np.max(data_array)}, Min: {np.min(data_array)}, Avg: {np.average(data_array)}, SNR: {snr(data_array)})")
@@ -269,6 +280,8 @@ def take_and_save_cubert_image(img_name, dark_cal, acquContext, procContext):
         # delete TL image
         print("CB: Deleting corresponding TL image because CB image saving failed...")
         try: 
+            os.remove(os.path.join(thorlabs_image_folder, 
+             + "_thorlabs.tif"))
             os.remove(os.path.join(thorlabs_image_folder, 
              + "_thorlabs.tif"))
             print("CB: Deleted corresponding TL image.")
