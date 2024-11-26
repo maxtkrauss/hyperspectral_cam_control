@@ -1,16 +1,17 @@
-import os
-import platform
-import sys
-import time
-from datetime import timedelta
 import cuvis
 import numpy as np
+import os
+import time
+from datetime import timedelta
+import platform
 
-def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 800):
+## Parameters
+cubert_dark_frame_folder = "images/calibration/cubert_dark"
+exposure_time_cb = 700  # in ms
+num_dark_frames = 10
 
-    print("REMEMBER TO PUT THE CAP ON.")
-
-    # Default directories and files:
+def setup_cubert_cam():
+    # Detect the platform and set directories
     data_dir = None
     lib_dir = None
 
@@ -21,17 +22,8 @@ def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 800):
         lib_dir = os.getenv("CUVIS_DATA")
         data_dir = os.path.normpath(os.path.join(lib_dir, "sample_data", "set_examples"))
 
-    # Default factory directory:
     factory_dir = os.path.join(lib_dir, os.pardir, "factory")
-
-    # Default settings and output directories:
     userSettingsDir = os.path.join(data_dir, "settings")
-    recDir = os.path.join(os.getcwd(), "images", "calibration", "cubert_dark")
-
-    # Parameters
-    exposure = exp_time  # in ms
-    distance = dist  # in ms
-    n_calibration_frames = n_frames
 
     # Start camera
     print("Loading user settings...")
@@ -43,59 +35,56 @@ def do_dark_calibration(exp_time = 250, n_frames = 10, dist = 800):
     processingContext = cuvis.ProcessingContext(calibration)
     acquisitionContext = cuvis.AcquisitionContext(calibration)
 
-    saveArgs = cuvis.SaveArgs(export_dir=recDir, allow_overwrite=True, allow_session_file=True)
-    cubeExporter = cuvis.CubeExporter(saveArgs)
-
     # Wait for camera to come online
     while acquisitionContext.state == cuvis.HardwareState.Offline:
         print(".", end="")
         time.sleep(1)
-    print("\nCamera is online")
+    print("\nCubert camera is online.")
 
-    # Set acquisition context parameters
     acquisitionContext.operation_mode = cuvis.OperationMode.Software
-    acquisitionContext.integration_time = exposure
-    processingContext.calc_distance(distance)
+    acquisitionContext.integration_time = exposure_time_cb
 
-    data_arrays = []
+    return acquisitionContext
 
-    # Take pictures
-    i = 0
-    imaging_failed_counter = 0
-    while i < n_calibration_frames:
-        print(f"Image recording... {i}")
-        try:
-            am = acquisitionContext.capture()
-            m, r = am.get(timedelta(milliseconds=1000))
-        except:
-            m = None
-            imaging_failed_counter += 1
-            print(f"CB: imaging failed. Counter: {imaging_failed_counter}")
+def take_dark_frame(acquisitionContext):
+    print(f"Capturing {exposure_time_cb}ms dark frame...")
+    am = acquisitionContext.capture()
+    mesu, res = am.get(timedelta(milliseconds=1000))
+    if mesu is not None:
+        dark_frame = np.array(mesu.data['cube'].array, dtype=float)
+        print("Dark frame captured successfully.")
+        return dark_frame
+    else:
+        print("Failed to capture dark frame.")
+        return None
 
-        if m is not None:
-            processingContext.apply(m)
-            data_arrays.append(np.array(m.data['cube'].array))
-            i += 1
-        else:
-            print("Imaging failed. Trying again.")
+def save_master_dark(dark_frame_avg, folder, exposure_time):
+    filename = f"masterdark_cb_{exposure_time}ms.npy"
+    path = os.path.join(folder, filename)
+    np.save(path, dark_frame_avg)
+    print(f"Master dark frame saved at: {path}")
 
-    # Stack the data arrays along a new axis and compute the average
-    stacked_data = np.stack(data_arrays, axis=0)
-    average_data = np.mean(stacked_data, axis=0)
+def main():
+    # Ensure the output folder exists
+    os.makedirs(cubert_dark_frame_folder, exist_ok=True)
 
-    # Print the shape of the averaged data
-    print("Shape of Master Dark:", average_data.shape)
-    print("Max of Master Dark:", np.max(average_data))
-    print("Min of Master Dark:", np.min(average_data))
-    print("Std of Master Dark:", np.std(average_data))
-    # print("Averaged data shape:", average_data.shape)
-    # print("Averaged data (sample values):", average_data[0, 0, :])
+    # Setup the Cubert camera
+    acquisitionContext = setup_cubert_cam()
 
-    # saving
-    np.save(f'images/calibration/cubert_dark/masterdark_cb_{exposure}ms.npy', average_data)
+    # Capture multiple dark frames
+    dark_frames = []
+    for i in range(num_dark_frames):
+        dark_frame = take_dark_frame(acquisitionContext)
+        if dark_frame is not None:
+            dark_frames.append(dark_frame)
+        time.sleep(0.5)  # Allow some delay between captures
 
-    print("Finished dark calibration")
-
+    # Average the dark frames
+    if len(dark_frames) > 0:
+        dark_frame_avg = np.mean(dark_frames, axis=0)
+        save_master_dark(dark_frame_avg, cubert_dark_frame_folder, exposure_time_cb)
+    else:
+        print("No dark frames captured. Please check the camera setup.")
 
 if __name__ == "__main__":
-    do_dark_calibration()
+    main()

@@ -5,8 +5,8 @@ import os
 from matplotlib import widgets
 
 # Folder paths for images
-thorlabs_image_folder = 'D:/NASA_HSI/Lab_Test_10_4_24/thorlabs'
-cubert_image_folder = 'D:/NASA_HSI/Lab_Test_10_4_24/cubert'
+thorlabs_image_folder = 'D:\\NASA_HSI\\polarization_test\\thorlabs'
+cubert_image_folder = 'D:\\NASA_HSI\\polarization_test\\cubert'
 
 # List available files in each folder
 thorlabs_files = sorted([f for f in os.listdir(thorlabs_image_folder) if f.endswith(".tif")])
@@ -16,6 +16,7 @@ cubert_files = sorted([f for f in os.listdir(cubert_image_folder) if f.endswith(
 current_img_index = 0
 current_tl_file = thorlabs_files[current_img_index%len(thorlabs_files)]
 current_cb_file = cubert_files[current_img_index%len(cubert_files)]
+
 current_channel = 53
 wavelengths = np.linspace(450, 850, 106)  # Assuming 106 channels from 450-850 nm
 

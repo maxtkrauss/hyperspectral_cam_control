@@ -42,9 +42,11 @@ def select_crop_region(image):
     # Return coordinates in the format ((col_start, col_end), (row_start, row_end))
     return ((col_start, col_end), (row_start, row_end))
 
-file1 = 'images//cubert//1_cubert.tif'
-file2 = 'images//thorlabs//1_thorlabs.tif'
+file1 = 'images//scenes//cubert//20241114_110703_cubert.tif'
+file2 = 'images//scenes//thorlabs//20241114_110703_thorlabs.tif'
 
+# file1 = 'cubert_cropped_120x120.tiff'
+# file2 = 'tl_cropped_660x660.tiff'
 
 tiff1 = tiff.imread(file1)
 tiff2 = tiff.imread(file2)
@@ -52,7 +54,7 @@ tiff2 = tiff.imread(file2)
 print(f'TIFF 1 shape: {tiff1.shape}')
 print(f'TIFF 2 shape: {tiff2.shape}')
 
-channel1 = tiff1[60]
+channel1 = tiff1[25]
 channel2 = tiff2[2]
 
 # Cropping Manual

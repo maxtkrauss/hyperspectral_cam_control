@@ -5,13 +5,13 @@ import create_dataset_display as create
 import os
 
 # Parameter
-exp_tl = 500
-exp_cb = 250
+exp_tl = 100
+exp_cb = 500
 n_frames = 10
-dist_cb = 800
+dist_cb = 700
 manual = False
-# dataset_path = "images\\display\\dataset"
-save_path = "B:\\nasa_hsi_dataset\\frosted_plastic_2024-09-18_slipped"
+dataset_path = "D:\\NASA_HSI\\flickr_dataset\\flickr30k_images\\flickr30k_images"
+save_path = "D:\\NASA_HSI\\polarization_test\\pol_0"
 try:
     os.mkdir(save_path)
     os.mkdir(os.path.join(save_path, 'thorlabs'))
